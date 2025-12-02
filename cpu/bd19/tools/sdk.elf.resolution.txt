@@ -1930,6 +1930,7 @@ obj/Release/apps/user_app/led_strip/led_strand_effect.o
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,set_rgb_sequence,pl
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,WS2812FX_mode_static,l
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,unbind_effect,l
+-r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,colorful_light_pure_white_breathing,l
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,fc_effect,pl
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,zd_countdown,l
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,meteor_mode,pl
@@ -2458,6 +2459,7 @@ obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o
 -r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,fc_music_breath,pl
 -r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,fc_music_static,pl
 -r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,fc_music_twinkle,pl
+-r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,colorful_light_pure_white_breathing,pl
 -r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,music_trg,pl
 -r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,music_step,pl
 -r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,fc_effect,l

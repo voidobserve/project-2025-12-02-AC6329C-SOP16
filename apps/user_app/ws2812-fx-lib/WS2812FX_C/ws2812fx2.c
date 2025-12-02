@@ -102,7 +102,10 @@ extern unsigned long get_syn_time(void);
 void WS2812FX_service() 
 {
   if(_running || _triggered) {
+    // USER_TO_DO 测试时使用： unsigned long now = millis() 
     // unsigned long now = millis(); // Be aware, millis() rolls over every 49 days
+
+    // USER_TO_DO 在测试时屏蔽了，实际要恢复
     unsigned long now = get_syn_time(); // Be aware, millis() rolls over every 49 days   获取定时的时间 该工程每10ms加10  
 
     uint8_t doShow = false;
@@ -443,7 +446,7 @@ uint8_t* WS2812FX_getActiveSegments(void) {
 //}
 
 void WS2812FX_setIdleSegment(uint8_t n, uint16_t start, uint16_t stop, mode_ptr mode, uint32_t color, uint16_t speed, uint8_t options) {
-  uint32_t colors[] = {color, 0, 0};
+  uint32_t colors[MAX_NUM_COLORS] = {color, 0, 0};
   WS2812FX_setIdleSegment_colors(n, start, stop, mode, colors, speed, options);
 }
 
@@ -453,7 +456,7 @@ void WS2812FX_setIdleSegment_colors(uint8_t n, uint16_t start, uint16_t stop, mo
 }
 
 void WS2812FX_setSegment_colorReverse(uint8_t n, uint16_t start, uint16_t stop, mode_ptr mode, uint32_t color, uint16_t speed, uint8_t reverse) {
-  uint32_t colors[] = {color, 0, 0};
+  uint32_t colors[MAX_NUM_COLORS] = {color, 0, 0};
   WS2812FX_setSegment_colorsOptions(n, start, stop, mode, colors, speed, (uint8_t)(reverse ? REVERSE : NO_OPTIONS));
 }
 
@@ -462,7 +465,7 @@ void WS2812FX_setSegment_colorsReverse(uint8_t n, uint16_t start, uint16_t stop,
 }
 
 void WS2812FX_setSegment_colorOptions(uint8_t n, uint16_t start, uint16_t stop, mode_ptr mode, uint32_t color, uint16_t speed, uint8_t options) {
-  uint32_t colors[] = {color, 0, 0};
+  uint32_t colors[MAX_NUM_COLORS] = {color, 0, 0};
   WS2812FX_setSegment_colorsOptions(n, start, stop, mode, colors, speed, options);
 }
 

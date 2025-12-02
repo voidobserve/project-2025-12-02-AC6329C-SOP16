@@ -85,6 +85,8 @@ typedef enum
   MODE_BREATH_W = 26 ,               //W通道呼吸
   MODE_MUTIL_C_BREATH,
 
+  MODE_MIXED_WHITE_BREATH,  // 混白色呼吸
+
 } change_type_e;
 
 #pragma pack (1)
@@ -109,7 +111,7 @@ typedef struct
   color_t rgb[MAX_NUM_COLORS];
   unsigned short speed;       //由档位决定 
 
-
+  u16 mixed_white_breath_speed; // 混白色呼吸的速度 目前固定只有 6秒 和 10秒，数值对应 6000 和 10000 
 } dream_scene_t;
 
 /*----------------------------倒计时结构体----------------------------------*/
@@ -214,4 +216,8 @@ void set_bright(u8 b);
 void fc_static_effect(u8 n);
 void ls_set_color(uint8_t n, uint32_t c);
 void music_static_sound(void);
+
+void set_static_mode(u8 r, u8 g, u8 b);
+void fc_dynamic_effect(u8 n);
+
 #endif

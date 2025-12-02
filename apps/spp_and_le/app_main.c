@@ -69,7 +69,7 @@ void app_var_init(void)
 {
     app_var.play_poweron_tone = 1;
 
-    app_var.auto_off_time =  TCFG_AUTO_SHUT_DOWN_TIME;
+    app_var.auto_off_time = TCFG_AUTO_SHUT_DOWN_TIME;
     app_var.warning_tone_v = 340;
     app_var.poweroff_tone_v = 330;
 }
@@ -99,7 +99,8 @@ void check_power_on_key(void)
                 /* set_key_poweron_flag(1); */
                 return;
             }
-        } else {
+        }
+        else {
             log_info("-");
             delay_10ms_cnt = 0;
             log_info("enter softpoweroff\n");
@@ -125,7 +126,8 @@ void app_main()
 #if(TCFG_SYS_LVD_EN == 1)
         vbat_check_init();
 #endif
-    } else {
+    }
+    else {
         check_power_on_voltage();
     }
 
@@ -214,10 +216,10 @@ void app_main()
 /*
  * app模式切换
  */
-void app_switch(const char *name, int action)
+void app_switch(const char* name, int action)
 {
     struct intent it;
-    struct application *app;
+    struct application* app;
 
     log_info("app_exit\n");
 
@@ -249,7 +251,7 @@ int eSystemConfirmStopStatus(void)
     return 1;
 }
 
-__attribute__((used)) int *__errno()
+__attribute__((used)) int* __errno()
 {
     static int err;
     return &err;
@@ -289,15 +291,15 @@ ___interrupt
 AT_VOLATILE_RAM_CODE
 void user_timer_isr(void)//50us
 {
-	static u8 timer_cnt;
-	TIMER_CON |= BIT(14);
+    static u8 timer_cnt;
+    TIMER_CON |= BIT(14);
 
-	timer_cnt++;
+    timer_cnt++;
 #if USER_IR_ENABLE
-//	if(timer_cnt%4==0)
-//	{
-        ir_detect_isr();
-//	}
+    //	if(timer_cnt%4==0)
+    //	{
+    ir_detect_isr();
+    //	}
 #endif
 
     void one_wire_send(void);
@@ -310,30 +312,30 @@ void user_timer_isr(void)//50us
 
 void user_timer_init(void)
 {
-	u32 prd_cnt;
-	u8 index;
+    u32 prd_cnt;
+    u8 index;
 
-//	printf("********* user_timer_init **********\n");
-	for (index = 0; index < (sizeof(timer_div) / sizeof(timer_div[0])); index++)
-	{
+    //	printf("********* user_timer_init **********\n");
+    for (index = 0; index < (sizeof(timer_div) / sizeof(timer_div[0])); index++)
+    {
         prd_cnt = TIMER_UNIT * (APP_TIMER_CLK / 8000) / timer_div[index];
         if (prd_cnt > MIN_TIME_CNT && prd_cnt < MAX_TIME_CNT) {
             break;
         }
     }
 
-	TIMER_CNT = 0;
-	TIMER_PRD = prd_cnt;
-	request_irq(TIMER_VETOR, 0, user_timer_isr, 0);
-	TIMER_CON = (index << 4) | BIT(0) | BIT(3);
+    TIMER_CNT = 0;
+    TIMER_PRD = prd_cnt;
+    request_irq(TIMER_VETOR, 0, user_timer_isr, 0);
+    TIMER_CON = (index << 4) | BIT(0) | BIT(3);
 }
 __initcall(user_timer_init);
 
 // --------------------------------------------------------------------------------------main_while
 extern u16 check_mic_adc(void);
 #define SAMPLE_N 20
-u8 i,j;
-u32 adc,adc_av,adc_all;
+u8 i, j;
+u32 adc, adc_av, adc_all;
 u16 adc_v[SAMPLE_N];    //记录20个ADC值
 u32 adc_avrg[10];        //记录5个平均值
 u32 adc_total[15];// __attribute__((aligned(4)));
@@ -344,22 +346,22 @@ u16 find_max(void)
     u32 max = 0;
     u8 max_index;
 
-    for(i=0; i<SAMPLE_N; i++)
+    for (i = 0; i < SAMPLE_N; i++)
     {
-        if(adc_total[i] > max) max = adc_total[i];
+        if (adc_total[i] > max) max = adc_total[i];
     }
-    for(i=0; i<SAMPLE_N; i++)
+    for (i = 0; i < SAMPLE_N; i++)
     {
-        if(adc_total[i] == max)
+        if (adc_total[i] == max)
         {
 
             break;
         }
     }
-    if(i==10)
+    if (i == 10)
     {
-        if(adc_total[10] / SAMPLE_N > adc_av*1.2 )
-        return 1000;
+        if (adc_total[10] / SAMPLE_N > adc_av * 1.2)
+            return 1000;
     }
     return 0;
 }
@@ -372,10 +374,10 @@ extern void set_music_oc_trg(u8 p);
 
 void sound_handle(void)
 {
-extern u32 adc_get_value(u32 ch);
+    extern u32 adc_get_value(u32 ch);
 
     u16 adc;
-    u8 i,trg,trg_v;
+    u8 i, trg, trg_v;
     u32 adc_all, adc_ttl;
 
     extern u32 adc_sample(u32 ch);
@@ -383,25 +385,25 @@ extern u32 adc_get_value(u32 ch);
     adc = adc_get_value(AD_CH_PA8);
 
     // adc = adc_sample(AD_CH_PA8);
-    if(adc < 1000)
+    if (adc < 1000)
     {
 
-        if(adc_sum_n < 2000)
+        if (adc_sum_n < 2000)
         {
             adc_sum_n++;
         }
-        if(adc_sum_n == 2000)
+        if (adc_sum_n == 2000)
         {
-            if(adc / (adc_sum/adc_sum_n) > 3) return ; //adc突变，大于平均值的3倍，丢弃改值
-            adc_sum = adc_sum - adc_sum/adc_sum_n;
+            if (adc / (adc_sum / adc_sum_n) > 3) return; //adc突变，大于平均值的3倍，丢弃改值
+            adc_sum = adc_sum - adc_sum / adc_sum_n;
         }
-        adc_sum+=adc;
+        adc_sum += adc;
 
         adc_v_n %= SAMPLE_N;
         adc_v[adc_v_n] = adc;
         adc_v_n++;
         adc_all = 0;
-        for(i=0; i<SAMPLE_N; i++)
+        for (i = 0; i < SAMPLE_N; i++)
         {
             adc_all += adc_v[i];
         }
@@ -411,12 +413,12 @@ extern u32 adc_get_value(u32 ch);
         adc_avrg_n++;
         // printf("%d,",adc_all / SAMPLE_N);
         adc_ttl = 0;
-        for(i=0; i<10; i++)
+        for (i = 0; i < 10; i++)
         {
             adc_ttl += adc_avrg[i];
         }
-        memmove((u8*)adc_total, (u8*)adc_total+4, 14*4);
-        adc_total[14] = adc_ttl/10; //总数平均值
+        memmove((u8*)adc_total, (u8*)adc_total + 4, 14 * 4);
+        adc_total[14] = adc_ttl / 10; //总数平均值
 
         // 查找峰值
         trg = 0;
@@ -437,11 +439,11 @@ extern u32 adc_get_value(u32 ch);
 
         //     )
         {
-            if(adc_sum_n!=0)
+            if (adc_sum_n != 0)
             {
                 extern void set_mss(uint16_t s);
-                set_mss(adc + (adc) * fc_effect.music.s / 100  );
-                if(adc * fc_effect.music.s / 100> adc_sum/adc_sum_n)
+                set_mss(adc + (adc)*fc_effect.music.s / 100);
+                if (adc * fc_effect.music.s / 100 > adc_sum / adc_sum_n)
                 {
                     // printf("\n adc=%d",adc);
                     // printf("\n adc_sum/adc_sum_n=%d",adc_sum/adc_sum_n);
@@ -449,9 +451,9 @@ extern u32 adc_get_value(u32 ch);
                     // set_music_oc_trg((adc - adc_sum/adc_sum_n)*100 * fc_effect.music.s / 100/(adc_sum/adc_sum_n));
 
                     extern void WS2812FX_trg(void);
-                    if(fc_effect.led_num < 90) //太多点数处理不过来
+                    if (fc_effect.led_num < 90) //太多点数处理不过来
                         // WS2812FX_trg();
-                    extern void set_music_fs_trg(u8 p);
+                        extern void set_music_fs_trg(u8 p);
                     // set_music_fs_trg((adc - adc_sum/adc_sum_n)*100 * fc_effect.music.s / 100/(adc_sum/adc_sum_n));
 
                     trg = 200;
@@ -460,11 +462,11 @@ extern u32 adc_get_value(u32 ch);
 
                 }
 
-                if(adc > adc_sum/adc_sum_n)
+                if (adc > adc_sum / adc_sum_n)
                 {
-                    set_music_oc_trg((adc - adc_sum/adc_sum_n)*100 * fc_effect.music.s / 100/(adc_sum/adc_sum_n));
+                    set_music_oc_trg((adc - adc_sum / adc_sum_n) * 100 * fc_effect.music.s / 100 / (adc_sum / adc_sum_n));
                     extern void set_music_fs_trg(u8 p);
-                    set_music_fs_trg((adc - adc_sum/adc_sum_n)*100 * fc_effect.music.s / 100/(adc_sum/adc_sum_n));
+                    set_music_fs_trg((adc - adc_sum / adc_sum_n) * 100 * fc_effect.music.s / 100 / (adc_sum / adc_sum_n));
 
                 }
             }
@@ -480,7 +482,7 @@ void main_while(viod)
 {
     u16 i;
     extern void run_tick_per_10ms(void);
-    extern void WS2812FX_service() ;
+    extern void WS2812FX_service();
     extern void ir_timer_handler(void);
     extern void check_mic_sound(void);
     void clr_wdt(void);
@@ -489,23 +491,23 @@ void main_while(viod)
     // extern void countdown_handler(void);
     // extern void time_clock_handler(void);
     // extern void acc_control(void);
-    while(1)
+    while (1)
     {
         // sound_handle();
-     
+
         time_clock_handler();  //闹钟
 
         ir_timer_handler();
 
-/****添加 处理函数 start**/
+        /****添加 处理函数 start**/
 
         check_mic_sound();      //采集声音并计算平均值
         music_static_sound();   //声控，七彩灯定色转换
-        
+
         effect_stepmotor();    //声控，电机的音乐效果
         meteor_period_sub();   //流星周期控制
         stepmotor();            //电机停止指令计时
-/****添加 处理函数 end**/
+        /****添加 处理函数 end**/
 
         rf24g_long_timer();
         run_tick_per_10ms();
@@ -535,21 +537,21 @@ void my_main(void)
     led_pwm_init();          //控制灯的PWM
     mic_gpio_init();         //本地麦克风
     mcu_com_init();          //电机控制芯片的初始化
-   
+
     // USER_TO_DO 测试时屏蔽：
 #if 1
-extern void io_ext_interrupt_syn(void); //上升沿中断初始化
+    extern void io_ext_interrupt_syn(void); //上升沿中断初始化
     io_ext_interrupt_syn();
 #endif
 
     read_flash_device_status_init();  //读取flash
-   
+
     full_color_init();
 
-    
-    os_sem_create(&LED_TASK_SEM,0);
+
+    os_sem_create(&LED_TASK_SEM, 0);
     task_create(main_while, NULL, "led_task");
-    
+
 
     /* sys_timeout_add;
     // 1ms调用

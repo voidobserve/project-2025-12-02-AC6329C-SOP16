@@ -31,6 +31,8 @@
 #include "asm/mcpwm.h"
 // #if TCFG_RF24GKEY_ENABLE
 #include "ir_key_app.h"
+#include "../../../apps/user_app/led_strip/led_strand_effect.h"
+
 #if 1
 #pragma pack (1)
 typedef struct
@@ -233,17 +235,17 @@ void rf24_key_handle(struct sys_event* event)
                 }
                 if (fc_effect.Now_state == IS_light_scene)
                 {
+                    if (MODE_MIXED_WHITE_BREATH == fc_effect.dream_scene.change_type)
+                    {
+                        // 如果正处于混白色呼吸
+                        fc_effect.dream_scene.mixed_white_breath_speed = (u16)6000;
+                    }
+                    else
+                    { 
+                        fc_effect.dream_scene.speed = 350; 
+                    }
 
-                    // extern void ls_speed_sub(void);
-                    // ls_speed_sub();
-                    fc_effect.dream_scene.speed = 350;
                     set_fc_effect();
-
-                    // memcpy(Send_buffer,Ble_Addr, 6);
-                    // Send_buffer[6] = 0x04;
-                    // Send_buffer[7] = 0x04;
-                    // Send_buffer[8] = (500 - fc_effect.dream_scene.speed) / 5;
-                    // ble_comm_att_send_data(fd_handle, ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE, Send_buffer, 9, ATT_OP_AUTO_READ_CCC);
                     save_user_data_area3();
                 }
                 if (fc_effect.Now_state == IS_light_music)
@@ -284,17 +286,18 @@ void rf24_key_handle(struct sys_event* event)
                 }
                 if (fc_effect.Now_state == IS_light_scene)
                 {
+                    if (MODE_MIXED_WHITE_BREATH == fc_effect.dream_scene.change_type)
+                    {
+                        // 如果正处于混白色呼吸
+                        fc_effect.dream_scene.mixed_white_breath_speed = (u16)10000;
+                    }
+                    else
+                    {
+                        fc_effect.dream_scene.speed = 200;
+                    }
 
-                    // extern void ls_speed_plus(void);
-                    // ls_speed_plus();
 
-                    fc_effect.dream_scene.speed = 200;
                     set_fc_effect();
-                    // memcpy(Send_buffer,Ble_Addr, 6);
-                    // Send_buffer[6] = 0x04;
-                    // Send_buffer[7] = 0x04;
-                    // Send_buffer[8] =(500 - fc_effect.dream_scene.speed) / 5;
-                    // ble_comm_att_send_data(fd_handle, ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE, Send_buffer, 9, ATT_OP_AUTO_READ_CCC);
                     save_user_data_area3();
                 }
 
@@ -348,17 +351,19 @@ void rf24_key_handle(struct sys_event* event)
             //天蓝色  85 250 255
             if (key_value == RF24_AZURE && event_type == KEY_EVENT_CLICK)
             {
+                // set_static_mode(85, 250, 255);
+                // 改成了 CYAN ， 蓝色和绿色分量最亮：
+                set_static_mode(0, 255, 255);
 
-                set_static_mode(85, 250, 255);
                 save_user_data_area3();
             }
             //玫红色  25 50 218  
             if (key_value == RF24_ROSE_RED && event_type == KEY_EVENT_CLICK)
             {
-
-                set_static_mode(255, 50, 218);
+                // set_static_mode(255, 50, 218);
+                // 改成 MAGENTA ， 红色和蓝色分量最亮
+                set_static_mode(255, 0, 255);
                 save_user_data_area3();
-
             }
             //纯白色   w b
             if (key_value == RF24_WHITE && event_type == KEY_EVENT_CLICK)
@@ -397,13 +402,25 @@ void rf24_key_handle(struct sys_event* event)
             //七色呼吸
             if (key_value == RF24_SEVEN_COLOR_BREATHE && event_type == KEY_EVENT_CLICK)
             {
+                // printf("breath\n");
+                u8 temp_buff[3] = { 0x04, 0x02, 254 }; // 对应混白色呼吸
 
+                // if (fc_effect.dream_scene.mixed_white_breath_speed != (u16)6000 && fc_effect.dream_scene.mixed_white_breath_speed != (u16)10000)
+                // {
+                //     fc_effect.dream_scene.mixed_white_breath_speed = 6000;
+                //     // fc_effect.dream_scene.mixed_white_breath_speed = 10000;
+                // }
+
+                parse_zd_data(temp_buff);
+
+#if 0
                 parse_zd_data(sevrn_color_breath);
                 sevrn_color_breath[2] += 1;
                 if (sevrn_color_breath[2] > 0x11)
                 {
                     sevrn_color_breath[2] = 0x0B;
                 }
+#endif
 
             }
             //7色跳变

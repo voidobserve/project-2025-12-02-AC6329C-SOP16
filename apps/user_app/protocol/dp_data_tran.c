@@ -790,7 +790,8 @@ void parse_zd_data(unsigned char *LedCommand)
                 save_user_data_area3();
             }
             //---------------------------------动态处理-----------------------------------
-            if(LedCommand[0]==0x04 && LedCommand[1]==0x02 && LedCommand[2]>=0x07 && LedCommand[2]<=0x1e)
+            // if(LedCommand[0]==0x04 && LedCommand[1]==0x02 && LedCommand[2]>=0x07 && LedCommand[2]<=0x1e)
+            if(LedCommand[0]==0x04 && LedCommand[1]==0x02 && LedCommand[2]>=0x07 && LedCommand[2]<=0xFF)
             {
                 fc_dynamic_effect(LedCommand[2]);
                 save_user_data_area3();

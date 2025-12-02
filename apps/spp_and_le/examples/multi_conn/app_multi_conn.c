@@ -158,6 +158,7 @@ static void multi_key_event_handler(struct sys_event *event)
         // log_info("app_key_evnet: %d,%d\n", event_type, key_value);
         
         /*   放置按键处理函数*/
+        extern void rf24_key_handle(struct sys_event* event);
         rf24_key_handle(event);
       
         

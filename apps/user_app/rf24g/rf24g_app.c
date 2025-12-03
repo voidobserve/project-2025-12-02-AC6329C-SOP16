@@ -238,7 +238,8 @@ void rf24_key_handle(struct sys_event* event)
                     if (MODE_MIXED_WHITE_BREATH == fc_effect.dream_scene.change_type)
                     {
                         // 如果正处于混白色呼吸
-                        fc_effect.dream_scene.mixed_white_breath_speed = (u16)6000;
+                        // fc_effect.dream_scene.mixed_white_breath_speed = (u16)6000;
+                        fc_effect.dream_scene.mixed_white_breath_speed = (u16)4000;
                     }
                     else
                     { 
@@ -289,7 +290,8 @@ void rf24_key_handle(struct sys_event* event)
                     if (MODE_MIXED_WHITE_BREATH == fc_effect.dream_scene.change_type)
                     {
                         // 如果正处于混白色呼吸
-                        fc_effect.dream_scene.mixed_white_breath_speed = (u16)10000;
+                        // fc_effect.dream_scene.mixed_white_breath_speed = (u16)10000;
+                        fc_effect.dream_scene.mixed_white_breath_speed = (u16)8000;
                     }
                     else
                     {

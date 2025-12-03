@@ -63,7 +63,8 @@ void fc_data_init(void)
     fc_effect.dream_scene.c_n = 1;  //颜色数量为1
     fc_effect.b = 255;
     fc_effect.dream_scene.speed = 100;
-    fc_effect.dream_scene.mixed_white_breath_speed = (u16)6000;
+    // fc_effect.dream_scene.mixed_white_breath_speed = (u16)6000;
+    fc_effect.dream_scene.mixed_white_breath_speed = (u16)4000; // 初始值为 4000，对应 4秒
     fc_effect.sequence = NEO_RGB;
     //流星
     fc_effect.metemor_on_off = 0x01;        //开关
@@ -1280,12 +1281,12 @@ static void ls_scene_effect(void)
 
     case MODE_MIXED_WHITE_BREATH:
     {
-        extern u16 colorful_light_pure_white_breathing(void);
+        extern u16 colorful_light_mixed_white_breathing(void);
         WS2812FX_setSegment_colorOptions(
             0,                                      //第0段
             0, // 起始位置
             0,                  //结束位置
-            &colorful_light_pure_white_breathing,            //效果
+            &colorful_light_mixed_white_breathing,            //效果
             0,                                      //颜色，WS2812FX_setColors设置
             fc_effect.dream_scene.mixed_white_breath_speed,            // 速度 （混白色呼吸 不依靠该传参，这里可以随便填）
             SIZE_MEDIUM);                           //选项，这里像素点大小：3

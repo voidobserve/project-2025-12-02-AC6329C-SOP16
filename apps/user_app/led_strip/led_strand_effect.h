@@ -111,7 +111,7 @@ typedef struct
   color_t rgb[MAX_NUM_COLORS];
   unsigned short speed;       //由档位决定 
 
-  u16 mixed_white_breath_speed; // 混白色呼吸的速度 目前固定只有 6秒 和 10秒，数值对应 6000 和 10000 
+  u16 mixed_white_breath_speed; // 混白色呼吸的速度 目前固定只有 4秒 和 8秒，数值对应 4000 和 8000 
 } dream_scene_t;
 
 /*----------------------------倒计时结构体----------------------------------*/

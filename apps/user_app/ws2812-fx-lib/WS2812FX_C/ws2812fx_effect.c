@@ -2699,7 +2699,14 @@ uint16_t fc_music_twinkle(void)
     return 50;
 }
 
-u16 colorful_light_pure_white_breathing(void)
+/**
+ * @brief 七彩灯的混白色呼吸动画
+ *          一轮动画的时间 == fc_effect.dream_scene.mixed_white_breath_speed，单位：ms
+ *          呼吸期间的最大亮度受 fc_effect.b 的影响
+ *
+ * @return u16
+ */
+u16 colorful_light_mixed_white_breathing(void)
 {
     // static u32 last_sys_time = 0;
     // extern u32 sys_time_get(void);
@@ -2737,7 +2744,7 @@ u16 colorful_light_pure_white_breathing(void)
     static volatile u16 brightness = 0; // 亮度值
     u16 speed = fc_effect.dream_scene.mixed_white_breath_speed; // 接收外部的速度值
     // u16 speed = (u16)10 * 1000;                            // 接收外部的速度值
-    u32 step = 0;                                          // 步长（放大了1000倍）
+    u32 step = 0;                                             // 步长（放大了1000倍）
     step = ((u32)fc_effect.b + 1) * 10 * 1000 * 2 / speed; // 实际测试这里的动画时间会比速度值多一倍，这里在分子上多乘以2（渐亮->渐灭->一轮动画完成）
 
     if (0 == _seg_rt->counter_mode_step &&
@@ -2798,14 +2805,7 @@ u16 colorful_light_pure_white_breathing(void)
                 temp_step = 0;
                 brightness = 0;
 
-                // _seg_rt->aux_param += 1; // 切换颜色数组 _seg->colors[] 中的下一个颜色
-                // if (_seg_rt->aux_param >= _seg->c_n)
-                // {
-                //     _seg_rt->aux_param = 0;
                 // printf("pure_white end\n");
-                // }
-
-                // dest_color = _seg->colors[_seg_rt->aux_param];
                 dest_color = (u32)WHITE;
 
                 // Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len); // 防止动画最后没有熄灭灯光

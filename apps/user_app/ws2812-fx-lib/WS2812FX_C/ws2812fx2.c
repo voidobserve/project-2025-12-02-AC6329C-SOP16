@@ -97,7 +97,8 @@ ws218运行
 配合定时
 */
 extern u8 ws2811fx_set_cycle;
-extern unsigned long get_syn_time(void);
+// extern unsigned long get_syn_time(void);
+extern u32 get_syn_time(void);
 
 void WS2812FX_service() 
 {
@@ -106,7 +107,8 @@ void WS2812FX_service()
     // unsigned long now = millis(); // Be aware, millis() rolls over every 49 days
 
     // USER_TO_DO 在测试时屏蔽了，实际要恢复
-    unsigned long now = get_syn_time(); // Be aware, millis() rolls over every 49 days   获取定时的时间 该工程每10ms加10  
+    // unsigned long now = get_syn_time(); // Be aware, millis() rolls over every 49 days    
+    u32 now = get_syn_time(); // Be aware, millis() rolls over every 49 days    
 
     uint8_t doShow = false;
     for(uint8_t i=0; i < _active_segments_len; i++) {

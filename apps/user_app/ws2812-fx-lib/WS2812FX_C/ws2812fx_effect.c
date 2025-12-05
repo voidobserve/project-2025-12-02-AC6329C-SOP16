@@ -2704,6 +2704,8 @@ uint16_t fc_music_twinkle(void)
  *          一轮动画的时间 == fc_effect.dream_scene.mixed_white_breath_speed，单位：ms
  *          呼吸期间的最大亮度受 fc_effect.b 的影响
  *
+ *      注意，时基要求是 20ms ，否则动画时间不准确 
+ *
  * @return u16
  */
 u16 colorful_light_mixed_white_breathing(void)
@@ -2745,7 +2747,12 @@ u16 colorful_light_mixed_white_breathing(void)
     u16 speed = fc_effect.dream_scene.mixed_white_breath_speed; // 接收外部的速度值
     // u16 speed = (u16)10 * 1000;                            // 接收外部的速度值
     u32 step = 0;                                             // 步长（放大了1000倍）
-    step = ((u32)fc_effect.b + 1) * 10 * 1000 * 2 / speed; // 实际测试这里的动画时间会比速度值多一倍，这里在分子上多乘以2（渐亮->渐灭->一轮动画完成）
+    // step = ((u32)fc_effect.b + 1) * 10 * 1000 * 2 / speed; // 实际测试这里的动画时间会比速度值多一倍，这里在分子上多乘以2（渐亮->渐灭->一轮动画完成）
+    /*
+        实际测试这里的动画时间会比速度值多一倍，这里在分子上多乘以2（渐亮->渐灭->一轮动画完成），
+        由于时基是20ms的，这里要再乘以2，总共多乘以4
+    */ 
+    step = ((u32)fc_effect.b + 1) * 10 * 1000 * 4 / speed; 
 
     if (0 == _seg_rt->counter_mode_step &&
         0 == _seg_rt->aux_param &&

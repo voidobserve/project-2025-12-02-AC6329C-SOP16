@@ -511,7 +511,7 @@ void main_while(viod)
 
         rf24g_long_timer();
         run_tick_per_10ms();
-        WS2812FX_service();
+        WS2812FX_service(); // 注意，这里约 20ms 才调用一次动画
         count_down_run();
         os_time_dly(1);
     }

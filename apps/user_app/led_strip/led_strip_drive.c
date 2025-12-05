@@ -281,7 +281,8 @@ void led_pwm_init(void)
 }
 
 
-unsigned long syn_ms = 0;
+// unsigned long syn_ms = 0;
+volatile u32 syn_ms = 0;
 u8 syn_timer_f = 0;
 
 AT_VOLATILE_RAM_CODE
@@ -298,7 +299,8 @@ void get_syn_signal(void)
 }
 
 
-unsigned long get_syn_time(void)
+// unsigned long get_syn_time(void)
+u32 get_syn_time(void)
 {
     return syn_ms;
 }
@@ -312,7 +314,7 @@ void io_ext_interrupt_syn(void)
 {
 
     printf("io_ext_interrupt_syn");
-    set_io_ext_interrupt_cbfun(my_io_isr_cbfun_syn);
+    set_io_ext_interrupt_cbfun(my_io_isr_cbfun_syn); // 注册调用的回调函数
     io_ext_interrupt_init(pwm_ch3, IO_PORT_DP, 0);
 
 

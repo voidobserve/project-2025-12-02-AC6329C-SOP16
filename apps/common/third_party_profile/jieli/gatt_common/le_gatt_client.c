@@ -801,13 +801,19 @@ static bool __resolve_adv_report(adv_report_t *report_pt, u16 len)
             // printf("!!!error_adv_packet:");
             // put_buf(report_pt->data, report_pt->length);
 
-            rf24g_scan(report_pt->data);    //天奕光纤灯2.4G遥控
+            // rf24g_scan(report_pt->data);    //天奕光纤灯2.4G遥控
 
             break;
         }
 
         ad_type = *adv_data_pt++;
         i += (length + 1);
+
+        // if (report_pt->rssi > - 60) {
+        //     put_buf(report_pt->data, report_pt->length);
+        // }
+
+        rf24g_scan(adv_data_pt);    //天奕光纤灯2.4G遥控
     
     /*  注意：  如果打印广播包内容，在这个行打印，长度是length  不要使用len*/
    

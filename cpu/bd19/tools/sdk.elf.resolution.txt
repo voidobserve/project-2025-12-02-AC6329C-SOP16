@@ -2111,8 +2111,6 @@ obj/Release/apps/user_app/rf24g/rf24g.o
 -r=obj/Release/apps/user_app/rf24g/rf24g.o,rf24g_scan,pl
 -r=obj/Release/apps/user_app/rf24g/rf24g.o,memcpy,l
 -r=obj/Release/apps/user_app/rf24g/rf24g.o,rf24g_long_timer,pl
--r=obj/Release/apps/user_app/rf24g/rf24g.o,printf,l
--r=obj/Release/apps/user_app/rf24g/rf24g.o,set_fc_effect,l
 -r=obj/Release/apps/user_app/rf24g/rf24g.o,get_rf24g_long_state,pl
 -r=obj/Release/apps/user_app/rf24g/rf24g.o,rf24g_scan_para,pl
 -r=obj/Release/apps/user_app/rf24g/rf24g.o,rf24g_rx_flag,pl
@@ -2120,7 +2118,6 @@ obj/Release/apps/user_app/rf24g/rf24g.o
 -r=obj/Release/apps/user_app/rf24g/rf24g.o,last_dynamic_code,pl
 -r=obj/Release/apps/user_app/rf24g/rf24g.o,last_key_v,pl
 -r=obj/Release/apps/user_app/rf24g/rf24g.o,rf24g_key_state,pl
--r=obj/Release/apps/user_app/rf24g/rf24g.o,fc_effect,l
 -r=obj/Release/apps/user_app/rf24g/rf24g.o,zd_countdown,l
 obj/Release/apps/user_app/rf24g/rf24g_app.o
 -r=obj/Release/apps/user_app/rf24g/rf24g_app.o,rf24g_pair_tc,pl

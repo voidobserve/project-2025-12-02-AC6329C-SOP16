@@ -37,29 +37,27 @@ struct key_driver_para rf24g_scan_para = {
 };
 
 //天奕2.4G遥控
-// #define HEADER1 0X55
-// #define HEADER2 0XAA
-#define HEADER1 0X5E
-#define HEADER2 0X01
+#define HEADER1 0X55
+#define HEADER2 0XAA
+// #define HEADER1 0X5E
+// #define HEADER2 0X01
 
 
 rf24g_ins_t rf24g_ins;
 
 u8 rf24g_rx_flag = 0;
 
-// 底层按键扫描，由__resolve_adv_report()调用
+// 底层按键扫描，由 __resolve_adv_report() 调用
 void rf24g_scan(u8* pBuf)
 {
     rf24g_ins_t* p = (rf24g_ins_t*)pBuf;
     if (p->header1 == HEADER1 && p->header2 == HEADER2)
     {
         // printf_buf(pBuf, sizeof(rf24g_ins_t));
-        // printf("key = %d",p->key_v);
+        // printf("key = %02x\n", p->key_v);
         memcpy((u8*)&rf24g_ins, pBuf, sizeof(rf24g_ins_t));
         rf24g_rx_flag = 1;
     }
-
-
 }
 
 static u16 long_press_cnt;      /* 定时10ms++ */
@@ -79,54 +77,18 @@ u8 rf24g_key_state;     /* 用完需要手动清状态,值KEY_EVENT_LONG，  */
 extern fc_effect_t fc_effect;
 static u8 rf24g_get_key_value(void)
 {
-
     if (rf24g_rx_flag == 1)
     {
-        rf24g_rx_flag = 0;
-        if ((last_dynamic_code != rf24g_ins.dynamic_code || last_key_v != rf24g_ins.key_v) && rf24g_ins.remoter_id == 0x00)
+        rf24g_rx_flag = 0; 
+        if (last_dynamic_code != rf24g_ins.dynamic_code)
         {
             long_press_cnt = 0;
-            // printf("\n dynamic_code=%d", rf24g_ins.dynamic_code);
-
             last_key_v = rf24g_ins.key_v;
             last_dynamic_code = rf24g_ins.dynamic_code;
-            return rf24g_ins.key_v;
-
+            return rf24g_ins.key_v; 
         }
-        else
-        {
-            if (long_press_cnt >= LONG_PRESS_T)
-            {
-                long_press_cnt = 0;
-                rf24g_key_state = KEY_EVENT_LONG;
-                printf("\n KEY_EVENT_LONG");
-                // return rf24g_ins.key_v;
-
-
-                if (rf24g_ins.key_v == RF24_SPEED_BRIGHT_SUB || rf24g_ins.key_v == RFKEY_SPEED_SUB)
-                {
-                    fc_effect.dream_scene.speed = 500;
-                    set_fc_effect();
-
-                }
-                if (rf24g_ins.key_v == RF24_SPEED_BRIGHT_PLUS || rf24g_ins.key_v == RFKEY_SPEED_PLUS)
-                {
-                    fc_effect.dream_scene.speed = 50;
-                    set_fc_effect();
-
-
-                }
-
-
-
-
-
-
-            }
-        }
-        // return rf24g_ins.key_v;
-
     }
+
     return NO_KEY;
 }
 

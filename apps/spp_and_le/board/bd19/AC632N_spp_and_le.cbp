@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="TY_GuangQian_220V" />
+		<Option title="天奕-光纤灯-220V" />
 		<Option compiler="q32s_lto_compiler" />
 		<Build>
 			<Target title="Release">
@@ -11,6 +11,7 @@
 				<Option type="1" />
 				<Option compiler="q32s_lto_compiler" />
 				<Compiler>
+					<Add option="-flto" />
 					<Add option="-Os" />
 					<Add option="-Wcast-align" />
 					<Add option="-Wundef" />
@@ -18,7 +19,6 @@
 					<Add option="-g" />
 					<Add option="-integrated-as" />
 					<Add option="-O0" />
-					<Add option="-flto" />
 					<Add option="-fallow-pointer-null" />
 					<Add option="-Wincompatible-pointer-types" />
 					<Add option="-fprefer-gnu-section" />
@@ -128,8 +128,10 @@
 					<Add directory="../../../user_app/ad_key" />
 					<Add directory="../../../user_app/one_wire" />
 					<Add directory="../../../user_app/rf24g" />
+					<Add directory="../../../user_app" />
 				</Compiler>
 				<Linker>
+					<Add option="-flto" />
 					<Add option="--plugin-opt=-inline-threshold=5" />
 					<Add option="--plugin-opt=save-temps" />
 					<Add option="--plugin-opt=-inline-normal-into-special-section=true" />
@@ -736,17 +738,15 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../user_app/protocol/dp_data_tran.h" />
-		<Unit filename="../../../user_app/rf24g/rf24g.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="../../../user_app/rf24g/rf24g.h" />
 		<Unit filename="../../../user_app/rf24g/rf24g_app.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../user_app/rf24g/rf24g_app.h" />
-		<Unit filename="../../../user_app/rf24g/rf24g_server_driver.c">
+		<Unit filename="../../../user_app/rf24g/rf24g_parse.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../../user_app/rf24g/rf24g_parse.h" />
 		<Unit filename="../../../user_app/rf24g/rf24g_server_driver.h" />
 		<Unit filename="../../../user_app/rf433/rf433.h" />
 		<Unit filename="../../../user_app/rf433/rf433_app.h" />

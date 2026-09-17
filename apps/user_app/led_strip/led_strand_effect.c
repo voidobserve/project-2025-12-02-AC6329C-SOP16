@@ -14,6 +14,9 @@
 #include "led_strip_drive.h"
 #include "app_main.h"
 #include "asm/mcpwm.h"
+
+#include "user_config.h"
+
 extern void printf_buf(u8* buf, u32 len);
 static void static_mode(void);
 static void fc_smear_adjust(void);
@@ -203,7 +206,7 @@ void turn_off_meteor(void)
 void   flash_printf(void);
 void set_fc_effect(void)
 {
-    printf("set_fc_effect");
+    printf("set_fc_effect\n");
 
     if (fc_effect.on_off_flag == DEVICE_ON)
     {
@@ -300,8 +303,9 @@ void set_fc_effect(void)
             break;
             //静态模式
         case IS_STATIC:
+            printf("IS_STATIC\n");
             static_mode();
-            printf("IS_STATIC");
+
             break;
         default:
             break;
@@ -1096,7 +1100,7 @@ void set_static_mode(u8 r, u8 g, u8 b)
 //静态效果
 static void static_mode(void)
 {
-    printf("static_mode");
+    printf("static_mode\n");
     WS2812FX_stop();
     WS2812FX_setSegment_colorOptions(           //设置一段颜色的效果
         0,                                      //第0段
@@ -1371,6 +1375,10 @@ void standard_jump(void)
 //针对天奕光纤灯修改的跳变
 void standart_jump_fix(void)
 {
+#if USER_DEBUG_ENABLE
+    printf("%s\n", __FUNCTION__);
+#endif
+
     extern uint16_t WS2812FX_mutil_c_jump(void);
     //WS2812FX_stop();
     WS2812FX_setSegment_colorOptions(
@@ -1392,6 +1400,10 @@ void standart_jump_fix(void)
 /*----------------------------------呼吸模式----------------------------------*/
 void strand_breath(void)
 {
+#if USER_DEBUG_ENABLE
+    printf("%s\n", __FUNCTION__);
+#endif
+
     WS2812FX_stop();
     WS2812FX_setSegment_colorOptions(
         0,                                      //第0段

@@ -8,6 +8,9 @@
 #include "asm/adc_api.h"
 #include "asm/mcpwm.h"
 #include "led_strand_effect.h"
+
+#include "user_config.h"
+
 MIC_OFFON MIC_ENABLE;           //0-关闭麦克风，1-开启麦克风
 
 const struct ledc_platform_data ledc_data =
@@ -38,16 +41,16 @@ void led_state_init(void)
 }
 
 
-void led_pwr_on(void)
-{
-    gpio_disable_fun_output_port(IO_PORTA_02);
-    gpio_set_die(IO_PORTA_02, 1);
-	gpio_set_direction(IO_PORTA_02, 0);
-	gpio_set_pull_up(IO_PORTA_02,1);
-    gpio_set_pull_down(IO_PORTA_02, 0);   //1，下拉；0，不下拉
+// void led_pwr_on(void)
+// {
+//     gpio_disable_fun_output_port(IO_PORTA_02);
+//     gpio_set_die(IO_PORTA_02, 1);
+// 	gpio_set_direction(IO_PORTA_02, 0);
+// 	gpio_set_pull_up(IO_PORTA_02,1);
+//     gpio_set_pull_down(IO_PORTA_02, 0);   //1，下拉；0，不下拉
 
-    gpio_direction_output(IO_PORTA_02,1);
-}
+//     gpio_direction_output(IO_PORTA_02,1);
+// }
 /*********************************mic脚IO口初始化***************************************************************/
 
 void mic_gpio_init()
@@ -69,10 +72,13 @@ void mic_gpio_init()
     // #define AD_CH_OSC32K     (0xE)
     // #define AD_CH_BT     (0xF)
 
+    
     adc_add_sample_ch(AD_CH_PA8);          //注意：初始化AD_KEY之前，先初始化ADC
+    gpio_set_pull_down(IO_PORTA_08, 0);
+    gpio_set_pull_up(IO_PORTA_08, 0);
     gpio_set_die(IO_PORTA_08, 0);
     gpio_set_direction(IO_PORTA_08, 1);
-    gpio_set_pull_down(IO_PORTA_08, 0);
+    
 }
 
 u16 check_mic_adc(void)
@@ -192,7 +198,7 @@ u8 get_sound_result(void)
 void led_gpio_init(void)
 {
     // USER_TO_DO 测试时屏蔽：
-#if 1
+#if (0 == USER_DEBUG_ENABLE)
 //过零检测
 	gpio_set_die(IO_PORT_DP, 1);        //过零触发检测口  普通io输入
 	gpio_set_direction(IO_PORT_DP, 1);  //输入模式

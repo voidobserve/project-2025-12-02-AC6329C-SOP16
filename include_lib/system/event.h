@@ -102,6 +102,7 @@
 #define DEVICE_EVENT_FROM_BOARD_UART   (('B' << 24) | ('D' << 16) | ('U' << 8) | '\0')
 
 enum {
+    KEY_EVENT_PRESS, // 刚按下
     KEY_EVENT_CLICK,            //单击
     KEY_EVENT_LONG,             //长按
     KEY_EVENT_HOLD,             //长按不放

@@ -1,0 +1,177 @@
+#include "rf24g_parse.h"
+#include "le/ble_api.h" // adv_report_t
+#include "key_driver.h"
+
+const u8 rf24g_parse_table[][RF24G_KEY_EVENT_MAX + 1] = {
+    {RF24G_R1C1_KEY_VAL, RF24G_KEY_EVENT_R1C1_PRESS, RF24G_KEY_EVENT_R1C1_CLICK,
+     RF24G_KEY_EVENT_R1C1_LONG, RF24G_KEY_EVENT_R1C1_HOLD,
+     RF24G_KEY_EVENT_R1C1_LOOSE},
+
+    {RF24G_R1C2_KEY_VAL, RF24G_KEY_EVENT_R1C2_PRESS, RF24G_KEY_EVENT_R1C2_CLICK,
+     RF24G_KEY_EVENT_R1C2_LONG, RF24G_KEY_EVENT_R1C2_HOLD,
+     RF24G_KEY_EVENT_R1C2_LOOSE},
+
+    {RF24G_R1C3_KEY_VAL, RF24G_KEY_EVENT_R1C3_PRESS, RF24G_KEY_EVENT_R1C3_CLICK,
+     RF24G_KEY_EVENT_R1C3_LONG, RF24G_KEY_EVENT_R1C3_HOLD,
+     RF24G_KEY_EVENT_R1C3_LOOSE},
+
+    {RF24G_R2C1_KEY_VAL, RF24G_KEY_EVENT_R2C1_PRESS, RF24G_KEY_EVENT_R2C1_CLICK,
+     RF24G_KEY_EVENT_R2C1_LONG, RF24G_KEY_EVENT_R2C1_HOLD,
+     RF24G_KEY_EVENT_R2C1_LOOSE},
+
+    {RF24G_R2C2_KEY_VAL, RF24G_KEY_EVENT_R2C2_PRESS, RF24G_KEY_EVENT_R2C2_CLICK,
+     RF24G_KEY_EVENT_R2C2_LONG, RF24G_KEY_EVENT_R2C2_HOLD,
+     RF24G_KEY_EVENT_R2C2_LOOSE},
+
+    {RF24G_R2C3_KEY_VAL, RF24G_KEY_EVENT_R2C3_PRESS, RF24G_KEY_EVENT_R2C3_CLICK,
+     RF24G_KEY_EVENT_R2C3_LONG, RF24G_KEY_EVENT_R2C3_HOLD,
+     RF24G_KEY_EVENT_R2C3_LOOSE},
+
+    {RF24G_R3C1_KEY_VAL, RF24G_KEY_EVENT_R3C1_PRESS, RF24G_KEY_EVENT_R3C1_CLICK,
+     RF24G_KEY_EVENT_R3C1_LONG, RF24G_KEY_EVENT_R3C1_HOLD,
+     RF24G_KEY_EVENT_R3C1_LOOSE},
+
+    {RF24G_R3C2_KEY_VAL, RF24G_KEY_EVENT_R3C2_PRESS, RF24G_KEY_EVENT_R3C2_CLICK,
+     RF24G_KEY_EVENT_R3C2_LONG, RF24G_KEY_EVENT_R3C2_HOLD,
+     RF24G_KEY_EVENT_R3C2_LOOSE},
+
+    {RF24G_R3C3_KEY_VAL, RF24G_KEY_EVENT_R3C3_PRESS, RF24G_KEY_EVENT_R3C3_CLICK,
+     RF24G_KEY_EVENT_R3C3_LONG, RF24G_KEY_EVENT_R3C3_HOLD,
+     RF24G_KEY_EVENT_R3C3_LOOSE},
+
+    {RF24G_R4C1_KEY_VAL, RF24G_KEY_EVENT_R4C1_PRESS, RF24G_KEY_EVENT_R4C1_CLICK,
+     RF24G_KEY_EVENT_R4C1_LONG, RF24G_KEY_EVENT_R4C1_HOLD,
+     RF24G_KEY_EVENT_R4C1_LOOSE},
+
+    {RF24G_R4C2_KEY_VAL, RF24G_KEY_EVENT_R4C2_PRESS, RF24G_KEY_EVENT_R4C2_CLICK,
+     RF24G_KEY_EVENT_R4C2_LONG, RF24G_KEY_EVENT_R4C2_HOLD,
+     RF24G_KEY_EVENT_R4C2_LOOSE},
+
+    {RF24G_R4C3_KEY_VAL, RF24G_KEY_EVENT_R4C3_PRESS, RF24G_KEY_EVENT_R4C3_CLICK,
+     RF24G_KEY_EVENT_R4C3_LONG, RF24G_KEY_EVENT_R4C3_HOLD,
+     RF24G_KEY_EVENT_R4C3_LOOSE},
+
+    {RF24G_R5C1_KEY_VAL, RF24G_KEY_EVENT_R5C1_PRESS, RF24G_KEY_EVENT_R5C1_CLICK,
+     RF24G_KEY_EVENT_R5C1_LONG, RF24G_KEY_EVENT_R5C1_HOLD,
+     RF24G_KEY_EVENT_R5C1_LOOSE},
+
+    {RF24G_R5C2_KEY_VAL, RF24G_KEY_EVENT_R5C2_PRESS, RF24G_KEY_EVENT_R5C2_CLICK,
+     RF24G_KEY_EVENT_R5C2_LONG, RF24G_KEY_EVENT_R5C2_HOLD,
+     RF24G_KEY_EVENT_R5C2_LOOSE},
+
+    {RF24G_R5C3_KEY_VAL, RF24G_KEY_EVENT_R5C3_PRESS, RF24G_KEY_EVENT_R5C3_CLICK,
+     RF24G_KEY_EVENT_R5C3_LONG, RF24G_KEY_EVENT_R5C3_HOLD,
+     RF24G_KEY_EVENT_R5C3_LOOSE},
+
+    {RF24G_R6C1_KEY_VAL, RF24G_KEY_EVENT_R6C1_PRESS, RF24G_KEY_EVENT_R6C1_CLICK,
+     RF24G_KEY_EVENT_R6C1_LONG, RF24G_KEY_EVENT_R6C1_HOLD,
+     RF24G_KEY_EVENT_R6C1_LOOSE},
+
+    {RF24G_R6C2_KEY_VAL, RF24G_KEY_EVENT_R6C2_PRESS, RF24G_KEY_EVENT_R6C2_CLICK,
+     RF24G_KEY_EVENT_R6C2_LONG, RF24G_KEY_EVENT_R6C2_HOLD,
+     RF24G_KEY_EVENT_R6C2_LOOSE},
+
+    {RF24G_R6C3_KEY_VAL, RF24G_KEY_EVENT_R6C3_PRESS, RF24G_KEY_EVENT_R6C3_CLICK,
+     RF24G_KEY_EVENT_R6C3_LONG, RF24G_KEY_EVENT_R6C3_HOLD,
+     RF24G_KEY_EVENT_R6C3_LOOSE},
+
+    {RF24G_R7C1_KEY_VAL, RF24G_KEY_EVENT_R7C1_PRESS, RF24G_KEY_EVENT_R7C1_CLICK,
+     RF24G_KEY_EVENT_R7C1_LONG, RF24G_KEY_EVENT_R7C1_HOLD,
+     RF24G_KEY_EVENT_R7C1_LOOSE},
+
+    {RF24G_R7C2_KEY_VAL, RF24G_KEY_EVENT_R7C2_PRESS, RF24G_KEY_EVENT_R7C2_CLICK,
+     RF24G_KEY_EVENT_R7C2_LONG, RF24G_KEY_EVENT_R7C2_HOLD,
+     RF24G_KEY_EVENT_R7C2_LOOSE},
+
+    {RF24G_R7C3_KEY_VAL, RF24G_KEY_EVENT_R7C3_PRESS, RF24G_KEY_EVENT_R7C3_CLICK,
+     RF24G_KEY_EVENT_R7C3_LONG, RF24G_KEY_EVENT_R7C3_HOLD,
+     RF24G_KEY_EVENT_R7C3_LOOSE},
+
+    {RF24G_R8C1_KEY_VAL, RF24G_KEY_EVENT_R8C1_PRESS, RF24G_KEY_EVENT_R8C1_CLICK,
+     RF24G_KEY_EVENT_R8C1_LONG, RF24G_KEY_EVENT_R8C1_HOLD,
+     RF24G_KEY_EVENT_R8C1_LOOSE},
+
+    {RF24G_R8C2_KEY_VAL, RF24G_KEY_EVENT_R8C2_PRESS, RF24G_KEY_EVENT_R8C2_CLICK,
+     RF24G_KEY_EVENT_R8C2_LONG, RF24G_KEY_EVENT_R8C2_HOLD,
+     RF24G_KEY_EVENT_R8C2_LOOSE},
+
+    {RF24G_R8C3_KEY_VAL, RF24G_KEY_EVENT_R8C3_PRESS, RF24G_KEY_EVENT_R8C3_CLICK,
+     RF24G_KEY_EVENT_R8C3_LONG, RF24G_KEY_EVENT_R8C3_HOLD,
+     RF24G_KEY_EVENT_R8C3_LOOSE},
+};
+
+volatile u8 rf24g_key_driver_event = 0; // 由 key_driver_scan() 更新
+volatile u8 rf24g_key_driver_value = 0; // 由 key_driver_scan() 更新
+
+static volatile u8 rf24g_rx_flag = 0;      // 是否收到了新的数据
+static volatile u8 rf24g_key_val = NO_KEY; // 存放按键键值
+
+static u8 rf24g_get_key_value(void); // 获取按键键值的函数声明
+volatile struct key_driver_para rf24g_scan_para = {
+    .scan_time = RF24G_KEY_SCAN_TIME_MS, // 按键扫描频率, 单位: ms
+    .last_key = NO_KEY, // 上一次get_value按键值, 初始化为NO_KEY;
+    .filter_time = RF24G_KEY_SCAN_FILTER_TIME_MS, // 按键消抖延时;
+    .long_time =
+        RF24G_KEY_LONG_TIME_MS / RF24G_KEY_SCAN_TIME_MS, // 按键判定长按数量
+    .hold_time = (RF24G_KEY_LONG_TIME_MS + RF24G_KEY_HOLD_TIME_MS) /
+                 RF24G_KEY_SCAN_TIME_MS, // 按键判定HOLD数量
+    .click_delay_time =
+        RF24G_KEY_SCAN_CLICK_DELAY_TIME_MS, // 按键被抬起后等待连击延时数量
+    .key_type = KEY_DRIVER_TYPE_RF24GKEY,
+    .get_value = rf24g_get_key_value,
+};
+
+static u8 rf24g_get_key_value(void)
+{
+    u8 key_value = 0;
+    static u16 time_out_cnt =
+        0; // 加入超时，防止丢包（超时时间与按键扫描时间有关）
+    static u8 last_key_value =
+        0; // 上一次按键键值，在超时时间内返回上一次按键键值
+
+    if (rf24g_rx_flag == 1) // 收到2.4G广播
+    {
+        rf24g_rx_flag = 0;
+
+        key_value = rf24g_key_val;
+
+        /*
+            2.4G接收可能会丢失100~200ms的数据包（响应会慢一些）
+            值 == 20，10ms调用一次该函数，这里填充200ms的超时值
+        */
+        time_out_cnt = 20;
+        // time_out_cnt = 5;
+
+        last_key_value = key_value;
+        return key_value;
+    }
+
+    if (time_out_cnt != 0) {
+        time_out_cnt--;
+        return last_key_value;
+    }
+
+    return NO_KEY;
+}
+
+void rf24g_parse(adv_report_t *adv_report)
+{
+    if (adv_report->length < 13) {
+        // 长度不对，直接返回
+        return;
+    }
+
+    // if (adv_report->rssi > -60) {
+    //     put_buf(adv_report->data, adv_report->length);
+    // }
+
+    if (0 == (adv_report->data[2] == RF24G_HEADER_1 &&
+              adv_report->data[3] == RF24G_HEADER_2)) {
+        // 格式头不正确，直接返回
+        return;
+    }
+
+    rf24g_key_val = adv_report->data[12];
+    // printf("key_val == %02x\n", (u16)rf24g_key_val);
+    rf24g_rx_flag = 1;
+}

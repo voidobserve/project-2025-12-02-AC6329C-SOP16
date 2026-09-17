@@ -19,6 +19,8 @@
 #include "jl_kws/jl_kws_api.h"
 #endif /* #if TCFG_KWS_VOICE_RECOGNITION_ENABLE */
 
+#include "user_config.h"
+#include "rf24g_app.h"
 
 #define LOG_TAG_CONST       APP
 #define LOG_TAG             "[APP]"
@@ -479,8 +481,7 @@ void sound_handle(void)
 
 // 1ms调用一次
 void main_while(viod)
-{
-    u16 i;
+{ 
     extern void run_tick_per_10ms(void);
     extern void WS2812FX_service();
     extern void ir_timer_handler(void);
@@ -495,9 +496,10 @@ void main_while(viod)
     {
         // sound_handle();
 
+        rf24g_key_event_handle();
         time_clock_handler();  //闹钟
 
-        ir_timer_handler();
+        // ir_timer_handler();
 
         /****添加 处理函数 start**/
 
@@ -509,7 +511,7 @@ void main_while(viod)
         stepmotor();            //电机停止指令计时
         /****添加 处理函数 end**/
 
-        rf24g_long_timer();
+        // rf24g_long_timer();
         run_tick_per_10ms();
         WS2812FX_service(); // 注意，这里约 20ms 才调用一次动画
         count_down_run();
@@ -521,40 +523,33 @@ void main_while(viod)
 
 
 #include "iokey.h"
-OS_SEM LED_TASK_SEM;
+// OS_SEM LED_TASK_SEM;
 
 void my_main(void)
 {
-    printf("\n my_main");
+    printf("my_main\n");
 
     extern void full_color_init(void);
     extern void led_state_init(void);
     extern void read_flash_device_status_init(void);
     extern void mic_gpio_init(void);
     extern void mcu_com_init();
-    led_state_init();        //初始化LED接口 必需需要，不加上，某些工程可能会导致不断重启 幻彩引脚初始化
-    led_gpio_init();         //RGB控制脚初始化
-    led_pwm_init();          //控制灯的PWM
-    mic_gpio_init();         //本地麦克风
-    mcu_com_init();          //电机控制芯片的初始化
+    led_state_init(); // 初始化LED接口 必需需要，不加上，某些工程可能会导致不断重启 幻彩引脚初始化
+    led_gpio_init(); // RGB控制脚初始化
+    led_pwm_init();  // 控制灯的PWM
+    mic_gpio_init(); // 本地麦克风
+    mcu_com_init();  // 电机控制芯片的初始化
 
-    // USER_TO_DO 测试时屏蔽：
-#if 1
+// USER_TO_DO 测试时屏蔽：
+#if (0 == USER_DEBUG_ENABLE)
     extern void io_ext_interrupt_syn(void); //上升沿中断初始化
     io_ext_interrupt_syn();
 #endif
 
-    read_flash_device_status_init();  //读取flash
+    read_flash_device_status_init(); // 读取flash
 
     full_color_init();
 
-
-    os_sem_create(&LED_TASK_SEM, 0);
-    task_create(main_while, NULL, "led_task");
-
-
-    /* sys_timeout_add;
-    // 1ms调用
-    sys_s_hi_timer_add(NULL,main_while,10); */
-
+    // os_sem_create(&LED_TASK_SEM, 0);
+    task_create(main_while, NULL, "led_task"); 
 }

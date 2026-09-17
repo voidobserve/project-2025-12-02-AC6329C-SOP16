@@ -11,6 +11,9 @@
 #include "app_config.h"
 #include "rdec_key.h"
 #include "tent600_key.h"
+
+#include "rf24g_parse.h"
+
 #if TCFG_KEY_TONE_EN
 #include "tone_player.h"
 #endif
@@ -28,7 +31,7 @@
 //#define LOG_CLI_ENABLE
 #include "debug.h"
 
-#define KEY_EVENT_CLICK_ONLY_SUPPORT	1 	//是否支持某些按键只响应单击事件
+#define KEY_EVENT_CLICK_ONLY_SUPPORT	0 	//是否支持某些按键只响应单击事件
 
 
 #if TCFG_SPI_LCD_ENABLE
@@ -146,6 +149,11 @@ static void key_driver_scan(void *_scan_para)
             if (cur_key_value != scan_para->notify_value) {  //第一次单击/连击时按下的是不同按键, 单击次数重新开始计数
                 scan_para->click_cnt = 1;
                 scan_para->notify_value = cur_key_value;
+
+                key_event = KEY_EVENT_PRESS;
+                scan_para->press_cnt++;
+                key_value = cur_key_value;
+                goto _notify;
             } else {
                 scan_para->click_cnt++;  //单击次数累加
             }
@@ -213,6 +221,22 @@ _notify:
         return;
     }
 #endif
+
+#if TCFG_RF24GKEY_ENABLE
+    if (KEY_DRIVER_TYPE_RF24GKEY == scan_para->key_type) {
+        // 如果是2.4G遥控器按键
+        // extern volatile u8 rf24g_key_driver_value;
+        // extern volatile u8 rf24g_key_driver_event;
+        rf24g_key_driver_value = key_value;
+        rf24g_key_driver_event = key_event;
+
+        scan_para->click_cnt = 0; // 单击次数清0
+        scan_para->notify_value = NO_KEY;
+
+        goto _scan_end; // 提前退出
+    }
+#endif
+
     // key_value &= ~BIT(7);  //BIT(7) 用作按键特殊处理的标志
     e.type = SYS_KEY_EVENT;
     e.u.key.init = 1;
@@ -266,7 +290,6 @@ int key_driver_init(void)
 //2.4G按键
 #if TCFG_RF24GKEY_ENABLE
 
-    extern struct key_driver_para rf24g_scan_para;
     sys_s_hi_timer_add((void *)&rf24g_scan_para, key_driver_scan, rf24g_scan_para.scan_time); //注册按键扫描定时器
 
 #endif 

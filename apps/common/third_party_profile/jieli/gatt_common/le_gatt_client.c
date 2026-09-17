@@ -30,6 +30,8 @@
 #include "ble_user.h"
 #include "le_gatt_common.h"
 
+#include "rf24g_parse.h"
+
 #define LOG_TAG_CONST       GATT_CLIENT
 #define LOG_TAG             "[GATT_CLIENT]"
 #define LOG_ERROR_ENABLE
@@ -800,9 +802,7 @@ static bool __resolve_adv_report(adv_report_t *report_pt, u16 len)
             /*过滤非标准包格式*/
             // printf("!!!error_adv_packet:");
             // put_buf(report_pt->data, report_pt->length);
-
-            // rf24g_scan(report_pt->data);    //天奕光纤灯2.4G遥控
-
+  
             break;
         }
 
@@ -813,7 +813,7 @@ static bool __resolve_adv_report(adv_report_t *report_pt, u16 len)
         //     put_buf(report_pt->data, report_pt->length);
         // }
 
-        rf24g_scan(adv_data_pt);    //天奕光纤灯2.4G遥控
+        rf24g_parse(report_pt);    //天奕光纤灯2.4G遥控
     
     /*  注意：  如果打印广播包内容，在这个行打印，长度是length  不要使用len*/
    
@@ -861,7 +861,6 @@ static bool __resolve_adv_report(adv_report_t *report_pt, u16 len)
             break;
 
         case HCI_EIR_DATATYPE_MANUFACTURER_SPECIFIC_DATA:  //HCI_EIR_DATATYPE_MANUFACTURER_SPECIFIC_DATA  FF开头
-            // rf24g_scan(adv_data_pt);    //天奕光纤灯2.4G遥控
             if (__check_device_is_match(report_pt->event_type, CLI_CREAT_BY_TAG, adv_data_pt, length - 1, &match_cfg)) {
                 log_info("get_tag_string!\n");
                 find_remoter = 1;

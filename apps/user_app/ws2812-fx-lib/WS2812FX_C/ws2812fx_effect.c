@@ -6,6 +6,8 @@
 #include "system/includes.h"
 #include "led_strip_drive.h"
 
+#include "user_config.h"
+
 #define CYCLE_T 0
 extern  Segment* _seg;
 extern  uint16_t _seg_len;
@@ -1665,6 +1667,10 @@ uint16_t WS2812FX_mode_mutil_fade(void)
 
 uint16_t WS2812FX_mode_mutil_breath(void)
 {
+#if USER_DEBUG_ENABLE
+    printf("%s\n", __FUNCTION__);
+#endif
+
     uint8_t size = (SIZE_OPTION << 1) + 1;
     uint8_t j;
     uint16_t lum = _seg_rt->aux_param3;
@@ -1675,8 +1681,10 @@ uint16_t WS2812FX_mode_mutil_breath(void)
         lum = 511 - lum;
     }
 
-    if (size > (_seg->stop - _seg->start))
+    if (size > (_seg->stop - _seg->start)) {
         return 0;
+    }
+
     _seg_rt->counter_mode_step = 0;
     _seg_rt->aux_param = 0;
     while (_seg_rt->counter_mode_step <= _seg->stop)
@@ -1693,7 +1701,7 @@ uint16_t WS2812FX_mode_mutil_breath(void)
 
     _seg_rt->aux_param3 += 4;
     _seg_rt->aux_param3 %= 511;
-
+  
     return _seg->speed / 4;
 }
 
@@ -2449,6 +2457,10 @@ uint16_t  WS2812FX_mode_static(void) {
 // 多种颜色跳变
 uint16_t WS2812FX_mutil_c_jump(void)
 {
+#if USER_DEBUG_ENABLE
+    printf("%s\n", __FUNCTION__);
+#endif
+
 
     Adafruit_NeoPixel_fill(_seg->colors[_seg_rt->counter_mode_step], _seg->start, _seg_len);
     _seg_rt->counter_mode_step++;

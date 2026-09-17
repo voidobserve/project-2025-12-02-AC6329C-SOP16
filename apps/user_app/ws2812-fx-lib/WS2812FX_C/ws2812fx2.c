@@ -24,7 +24,6 @@ keil MDK 编译器不支持二进制表示，因此首先要实现binary.h文件
 
  */
 
-
 /* 注意
 移植该库需要建立在移植好Adafruit_NeoPixel库的基础上进行，该库会用到很多Adafruit_NeoPixel库中的接口。
 
@@ -45,24 +44,25 @@ keil MDK 编译器不支持二进制表示，因此首先要实现binary.h文件
 #include <stdlib.h>
 #include <string.h>
 
-
-
+#include "user_config.h"
 
 static uint16_t _rand16seed;
 static void (*customShow)(void) = NULL;
 uint8_t _running, _triggered;
-static Segment _segments[MAX_NUM_SEGMENTS];                 // array of segments (20 bytes per element)
-static Segment_runtime  _segment_runtimes[MAX_NUM_ACTIVE_SEGMENTS]; // array of segment runtimes (16 bytes per element)
-static uint8_t _active_segments[MAX_NUM_ACTIVE_SEGMENTS];          // array of active segments (1 bytes per element)
-static uint8_t _segments_len = 0;          // size of _segments array
-static uint8_t _active_segments_len = 0;   // size of _segments_runtime and _active_segments arrays
-static uint8_t _num_segments = 0;          // number of configured segments in the _segments array
- Segment* _seg;                      // currently active segment (20 bytes)
- Segment_runtime* _seg_rt;           // currently active segment runtime (16 bytes)
- uint16_t _seg_len;                  // num LEDs in the currently active segment
-
-
-
+static Segment
+    _segments[MAX_NUM_SEGMENTS]; // array of segments (20 bytes per element)
+static Segment_runtime _segment_runtimes
+    [MAX_NUM_ACTIVE_SEGMENTS]; // array of segment runtimes (16 bytes per element)
+static uint8_t _active_segments
+    [MAX_NUM_ACTIVE_SEGMENTS]; // array of active segments (1 bytes per element)
+static uint8_t _segments_len = 0; // size of _segments array
+static uint8_t _active_segments_len =
+    0; // size of _segments_runtime and _active_segments arrays
+static uint8_t _num_segments =
+    0;         // number of configured segments in the _segments array
+Segment *_seg; // currently active segment (20 bytes)
+Segment_runtime *_seg_rt; // currently active segment runtime (16 bytes)
+uint16_t _seg_len;        // num LEDs in the currently active segment
 
 /**
  * @brief ws2812的初始化
@@ -70,26 +70,28 @@ static uint8_t _num_segments = 0;          // number of configured segments in t
  * @param num_leds 灯珠的数量，一条灯带有10个灯珠，参数就为10
  * @param type 颜色顺序，一般是RGB
  */
-void WS2812FX_init(uint16_t num_leds, uint8_t type) {
-  #ifdef MY_DEBUG
-  printf("WS2812FX_init\n");
-  #endif
-  Adafruit_NeoPixel_init(num_leds, type); //该函数要放在起始位置，放在后面可能会导致内存申请失败
-  _running = false;
-  _segments_len = MAX_NUM_SEGMENTS;
-  _active_segments_len = MAX_NUM_ACTIVE_SEGMENTS;
+void WS2812FX_init(uint16_t num_leds, uint8_t type)
+{
+#ifdef MY_DEBUG
+    printf("WS2812FX_init\n");
+#endif
+    Adafruit_NeoPixel_init(
+        num_leds, type); //该函数要放在起始位置，放在后面可能会导致内存申请失败
+    _running = false;
+    _segments_len = MAX_NUM_SEGMENTS;
+    _active_segments_len = MAX_NUM_ACTIVE_SEGMENTS;
 
-  // create all the segment arrays and init to zeros 
-  /* _segments = (Segment *)malloc(_segments_len * sizeof(Segment)); */
- /*  _active_segments = (uint8_t *)malloc(_active_segments_len * sizeof(uint8_t)); */
-/*   _segment_runtimes = (Segment_runtime *)malloc(_active_segments_len * sizeof(Segment_runtime)); */
+    // create all the segment arrays and init to zeros
+    /* _segments = (Segment *)malloc(_segments_len * sizeof(Segment)); */
+    /*  _active_segments = (uint8_t *)malloc(_active_segments_len * sizeof(uint8_t)); */
+    /*   _segment_runtimes = (Segment_runtime *)malloc(_active_segments_len * sizeof(Segment_runtime)); */
 
-  WS2812FX_resetSegments();
-  // WS2812FX_setSegment_colorOptions(0, 0, num_leds - 1, DEFAULT_MODE, DEFAULT_COLOR, DEFAULT_SPEED, NO_OPTIONS);
+    WS2812FX_resetSegments();
+    // WS2812FX_setSegment_colorOptions(0, 0, num_leds - 1, DEFAULT_MODE, DEFAULT_COLOR, DEFAULT_SPEED, NO_OPTIONS);
 
-  WS2812FX_resetSegmentRuntimes();
+    WS2812FX_resetSegmentRuntimes();
 
-  Adafruit_NeoPixel_setBrightness(DEFAULT_BRIGHTNESS + 1);
+    Adafruit_NeoPixel_setBrightness(DEFAULT_BRIGHTNESS + 1);
 }
 
 /*
@@ -100,34 +102,36 @@ extern u8 ws2811fx_set_cycle;
 // extern unsigned long get_syn_time(void);
 extern u32 get_syn_time(void);
 
-void WS2812FX_service() 
+void WS2812FX_service()
 {
-  if(_running || _triggered) {
-    // USER_TO_DO 测试时使用： unsigned long now = millis() 
-    // unsigned long now = millis(); // Be aware, millis() rolls over every 49 days
+    if (_running || _triggered) {
+#if USER_DEBUG_ENABLE
+        // USER_TO_DO 测试时使用： unsigned long now = millis()
+        unsigned long now = millis(); // Be aware, millis() rolls over every 49 days
 
-    // USER_TO_DO 在测试时屏蔽了，实际要恢复
-    // unsigned long now = get_syn_time(); // Be aware, millis() rolls over every 49 days    
-    u32 now = get_syn_time(); // Be aware, millis() rolls over every 49 days    
+#else
+        // USER_TO_DO 在测试时屏蔽了，实际要恢复
+        // unsigned long now = get_syn_time(); // Be aware, millis() rolls over every 49 days
+        u32 now = get_syn_time(); // Be aware, millis() rolls over every 49 days
+#endif
+        uint8_t doShow = false;
+        for (uint8_t i = 0; i < _active_segments_len; i++) {
+            if (_active_segments[i] != INACTIVE_SEGMENT) {
+                _seg = &_segments[_active_segments[i]];
+                _seg_len = (uint16_t)(_seg->stop - _seg->start + 1);
+                _seg_rt = &_segment_runtimes[i];
+                CLR_FRAME_CYCLE;
 
-    uint8_t doShow = false;
-    for(uint8_t i=0; i < _active_segments_len; i++) {
-      if(_active_segments[i] != INACTIVE_SEGMENT) {
-        _seg     = &_segments[_active_segments[i]];
-        _seg_len = (uint16_t)(_seg->stop - _seg->start + 1);
-        _seg_rt  = &_segment_runtimes[i];
-        CLR_FRAME_CYCLE;
-        
-        if(now >= _seg_rt->next_time || _triggered) {
-          SET_FRAME;
-          doShow = true;
-          
-          uint16_t delay = _seg->mode();
-          _seg_rt->next_time = now + max(delay, SPEED_MIN);
-          _seg_rt->counter_mode_call++;
-        }
+                if (now >= _seg_rt->next_time || _triggered) {
+                    SET_FRAME;
+                    doShow = true;
 
-/*         printf("_seg = \n");
+                    uint16_t delay = _seg->mode();
+                    _seg_rt->next_time = now + max(delay, SPEED_MIN);
+                    _seg_rt->counter_mode_call++;
+                }
+
+                /*         printf("_seg = \n");
         printf_buf(_seg,16);
         printf("\n");
 
@@ -136,56 +140,60 @@ void WS2812FX_service()
         printf_buf(_active_segments,MAX_NUM_ACTIVE_SEGMENTS);
         printf("\n");
  */
+            }
+        }
+        if (doShow) {
+            //  delay(1); // for ESP32 (see https://forums.adafruit.com/viewtopic.php?f=47&t=117327)
 
-      }
+            WS2812FX_show();
+        }
+        _triggered = false;
     }
-    if(doShow) {
-    //  delay(1); // for ESP32 (see https://forums.adafruit.com/viewtopic.php?f=47&t=117327)
-      
-      
-      WS2812FX_show();
-    }
-    _triggered = false;
-  }
 }
 
 // 设置颜色数量
 void WS2812FX_set_coloQty(uint8_t seg, uint8_t n)
 {
-  if(n > MAX_NUM_COLORS) n = MAX_NUM_COLORS;
-  _segments[seg].c_n = n;
+    if (n > MAX_NUM_COLORS)
+        n = MAX_NUM_COLORS;
+    _segments[seg].c_n = n;
 }
 
 // overload setPixelColor() functions so we can use gamma correction
 // (see https://learn.adafruit.com/led-tricks-gamma-correction/the-issue)
-void WS2812FX_setPixelColor(uint16_t n, uint32_t c) {
-  uint8_t w = (c >> 24) & 0xFF;
-  uint8_t r = (c >> 16) & 0xFF;
-  uint8_t g = (c >>  8) & 0xFF;
-  uint8_t b =  c        & 0xFF;
-  WS2812FX_setPixelColor_rgbw(n, r, g, b, w);
+void WS2812FX_setPixelColor(uint16_t n, uint32_t c)
+{
+    uint8_t w = (c >> 24) & 0xFF;
+    uint8_t r = (c >> 16) & 0xFF;
+    uint8_t g = (c >> 8) & 0xFF;
+    uint8_t b = c & 0xFF;
+    WS2812FX_setPixelColor_rgbw(n, r, g, b, w);
 }
 
-void WS2812FX_setPixelColor_rgb(uint16_t n, uint8_t r, uint8_t g, uint8_t b) {
-  WS2812FX_setPixelColor_rgbw(n, r, g, b, 0);
+void WS2812FX_setPixelColor_rgb(uint16_t n, uint8_t r, uint8_t g, uint8_t b)
+{
+    WS2812FX_setPixelColor_rgbw(n, r, g, b, 0);
 }
 
-void WS2812FX_setPixelColor_rgbw(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
-  if(IS_GAMMA) 
-  {
-    Adafruit_NeoPixel_setPixelColor_rgbw(n, Adafruit_NeoPixel_gamma8(r), Adafruit_NeoPixel_gamma8(g), Adafruit_NeoPixel_gamma8(b), Adafruit_NeoPixel_gamma8(w));
-  } 
-  else 
-  {
-    Adafruit_NeoPixel_setPixelColor_rgbw(n, r, g, b, w);
-  }
+void WS2812FX_setPixelColor_rgbw(uint16_t n, uint8_t r, uint8_t g, uint8_t b,
+                                 uint8_t w)
+{
+    if (IS_GAMMA) {
+        Adafruit_NeoPixel_setPixelColor_rgbw(
+            n, Adafruit_NeoPixel_gamma8(r), Adafruit_NeoPixel_gamma8(g),
+            Adafruit_NeoPixel_gamma8(b), Adafruit_NeoPixel_gamma8(w));
+    } else {
+        Adafruit_NeoPixel_setPixelColor_rgbw(n, r, g, b, w);
+    }
 }
 
-void WS2812FX_copyPixels(uint16_t dest, uint16_t src, uint16_t count) {
-  uint8_t *pixels = Adafruit_NeoPixel_getPixels();
-  uint8_t bytesPerPixel = WS2812FX_getNumBytesPerPixel(); // 3=RGB, 4=RGBW
+void WS2812FX_copyPixels(uint16_t dest, uint16_t src, uint16_t count)
+{
+    uint8_t *pixels = Adafruit_NeoPixel_getPixels();
+    uint8_t bytesPerPixel = WS2812FX_getNumBytesPerPixel(); // 3=RGB, 4=RGBW
 
-  memmove(pixels + (dest * bytesPerPixel), pixels + (src * bytesPerPixel), count * bytesPerPixel);
+    memmove(pixels + (dest * bytesPerPixel), pixels + (src * bytesPerPixel),
+            count * bytesPerPixel);
 }
 
 // change the underlying Adafruit_NeoPixel pixels pointer (use with care)
@@ -197,106 +205,129 @@ void WS2812FX_copyPixels(uint16_t dest, uint16_t src, uint16_t count) {
 //}
 
 // overload show() functions so we can use custom show()
-void WS2812FX_show(void) {
-  customShow == NULL ? Adafruit_NeoPixel_show() : customShow();
-}
-
-void WS2812FX_start() {
-  WS2812FX_resetSegmentRuntimes();
-  _running = true;
-}
-
-void WS2812FX_stop() {
-  _running = false;
-  // WS2812FX_strip_off();   //可能导致死机
-   
-}
-
-void WS2812FX_play(void) 
+void WS2812FX_show(void)
 {
-  _running = true;
+    customShow == NULL ? Adafruit_NeoPixel_show() : customShow();
 }
 
-void WS2812FX_pause() {
-  _running = false;
+void WS2812FX_start()
+{
+    WS2812FX_resetSegmentRuntimes();
+    _running = true;
 }
 
-void WS2812FX_resume() {
-  WS2812FX_resetSegments();
-  _running = true;
+void WS2812FX_stop()
+{
+    _running = false;
+    // WS2812FX_strip_off();   //可能导致死机
 }
 
-void WS2812FX_trigger() {
-  _triggered = true;
+void WS2812FX_play(void)
+{
+    _running = true;
 }
 
-void WS2812FX_setMode(mode_ptr m) {
-  WS2812FX_setMode_seg(0, m);
+void WS2812FX_pause()
+{
+    _running = false;
 }
 
-void WS2812FX_setMode_seg(uint8_t seg, mode_ptr m) {
-  WS2812FX_resetSegmentRuntime(seg);
-  _segments[seg].mode = m;
+void WS2812FX_resume()
+{
+    WS2812FX_resetSegments();
+    _running = true;
 }
 
-void WS2812FX_setOptions(uint8_t seg, uint8_t o) {
-  _segments[seg].options = o;
+void WS2812FX_trigger()
+{
+    _triggered = true;
 }
 
-void WS2812FX_setSpeed(uint16_t s) {
-  WS2812FX_setSpeed_seg(0, s);
+void WS2812FX_setMode(mode_ptr m)
+{
+    WS2812FX_setMode_seg(0, m);
 }
 
-void WS2812FX_setSpeed_seg(uint8_t seg, uint16_t s) {
-  _segments[seg].speed = constrain(s, SPEED_MIN, SPEED_MAX);
+void WS2812FX_setMode_seg(uint8_t seg, mode_ptr m)
+{
+    WS2812FX_resetSegmentRuntime(seg);
+    _segments[seg].mode = m;
 }
 
-void WS2812FX_increaseSpeed(uint8_t s) {
-  uint16_t newSpeed = constrain(_seg->speed + s, SPEED_MIN, SPEED_MAX);
-  WS2812FX_setSpeed(newSpeed);
+void WS2812FX_setOptions(uint8_t seg, uint8_t o)
+{
+    _segments[seg].options = o;
 }
 
-void WS2812FX_decreaseSpeed(uint8_t s) {
-  uint16_t newSpeed = constrain(_seg->speed - s, SPEED_MIN, SPEED_MAX);
-  WS2812FX_setSpeed(newSpeed);
+void WS2812FX_setSpeed(uint16_t s)
+{
+    WS2812FX_setSpeed_seg(0, s);
 }
 
-void WS2812FX_setColor_rgb(uint8_t r, uint8_t g, uint8_t b) {
-  WS2812FX_setColor(((uint32_t)r << 16) | ((uint32_t)g << 8) | b);
+void WS2812FX_setSpeed_seg(uint8_t seg, uint16_t s)
+{
+    _segments[seg].speed = constrain(s, SPEED_MIN, SPEED_MAX);
 }
 
-void WS2812FX_setColor_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
-  WS2812FX_setColor((((uint32_t)w << 24)| ((uint32_t)r << 16) | ((uint32_t)g << 8)| ((uint32_t)b)));
+void WS2812FX_increaseSpeed(uint8_t s)
+{
+    uint16_t newSpeed = constrain(_seg->speed + s, SPEED_MIN, SPEED_MAX);
+    WS2812FX_setSpeed(newSpeed);
 }
 
-void WS2812FX_setColor(uint32_t c) {
-  WS2812FX_setColor_seg(0, c);
+void WS2812FX_decreaseSpeed(uint8_t s)
+{
+    uint16_t newSpeed = constrain(_seg->speed - s, SPEED_MIN, SPEED_MAX);
+    WS2812FX_setSpeed(newSpeed);
 }
 
-void WS2812FX_setColor_seg(uint8_t seg, uint32_t c) {
-  _segments[seg].colors[0] = c;
+void WS2812FX_setColor_rgb(uint8_t r, uint8_t g, uint8_t b)
+{
+    WS2812FX_setColor(((uint32_t)r << 16) | ((uint32_t)g << 8) | b);
 }
 
-void WS2812FX_setColors(uint8_t seg, uint32_t* c) {
-  for(uint8_t i=0; i<MAX_NUM_COLORS; i++) {
-    _segments[seg].colors[i] = c[i];
-  }
+void WS2812FX_setColor_rgbw(uint8_t r, uint8_t g, uint8_t b, uint8_t w)
+{
+    WS2812FX_setColor((((uint32_t)w << 24) | ((uint32_t)r << 16) |
+                       ((uint32_t)g << 8) | ((uint32_t)b)));
 }
 
-void WS2812FX_setBrightness(uint8_t b) {
-  b = constrain(b, BRIGHTNESS_MIN, BRIGHTNESS_MAX);
-  Adafruit_NeoPixel_setBrightness(b);
-  WS2812FX_show();
+void WS2812FX_setColor(uint32_t c)
+{
+    WS2812FX_setColor_seg(0, c);
 }
 
-void WS2812FX_increaseBrightness(uint8_t s) {
-  s = constrain(Adafruit_NeoPixel_getBrightness() + s, BRIGHTNESS_MIN, BRIGHTNESS_MAX);
-  WS2812FX_setBrightness(s);
+void WS2812FX_setColor_seg(uint8_t seg, uint32_t c)
+{
+    _segments[seg].colors[0] = c;
 }
 
-void WS2812FX_decreaseBrightness(uint8_t s) {
-  s = constrain(Adafruit_NeoPixel_getBrightness() - s, BRIGHTNESS_MIN, BRIGHTNESS_MAX);
-  WS2812FX_setBrightness(s);
+void WS2812FX_setColors(uint8_t seg, uint32_t *c)
+{
+    for (uint8_t i = 0; i < MAX_NUM_COLORS; i++) {
+        _segments[seg].colors[i] = c[i];
+    }
+}
+
+void WS2812FX_setBrightness(uint8_t b)
+{
+    b = constrain(b, BRIGHTNESS_MIN, BRIGHTNESS_MAX);
+    Adafruit_NeoPixel_setBrightness(b);
+    WS2812FX_show();
+}
+
+void WS2812FX_increaseBrightness(uint8_t s)
+{
+    s = constrain(Adafruit_NeoPixel_getBrightness() + s, BRIGHTNESS_MIN,
+                  BRIGHTNESS_MAX);
+    WS2812FX_setBrightness(s);
+}
+
+void WS2812FX_decreaseBrightness(uint8_t s)
+{
+    s = constrain(Adafruit_NeoPixel_getBrightness() - s, BRIGHTNESS_MIN,
+                  BRIGHTNESS_MAX);
+    WS2812FX_setBrightness(s);
 }
 
 //void WS2812FX::setLength(uint16_t b) {
@@ -326,117 +357,146 @@ void WS2812FX_decreaseBrightness(uint8_t s) {
 //  if (s < seglen) setLength(seglen - s);
 //}
 
-uint8_t WS2812FX_isRunning() {
-  return _running;
+uint8_t WS2812FX_isRunning()
+{
+    return _running;
 }
 
-uint8_t WS2812FX_isTriggered() {
-  return _triggered;
+uint8_t WS2812FX_isTriggered()
+{
+    return _triggered;
 }
 
-uint8_t WS2812FX_isFrame() {
-  return WS2812FX_isFrame_seg(0);
+uint8_t WS2812FX_isFrame()
+{
+    return WS2812FX_isFrame_seg(0);
 }
 
-uint8_t WS2812FX_isFrame_seg(uint8_t seg) {
-  uint8_t* ptr = (uint8_t*)memchr(_active_segments, seg, _active_segments_len);
-  if(ptr == NULL) return false; // segment not active
-  return (_segment_runtimes[ptr - _active_segments].aux_param2 & FRAME);
+uint8_t WS2812FX_isFrame_seg(uint8_t seg)
+{
+    uint8_t *ptr =
+        (uint8_t *)memchr(_active_segments, seg, _active_segments_len);
+    if (ptr == NULL)
+        return false; // segment not active
+    return (_segment_runtimes[ptr - _active_segments].aux_param2 & FRAME);
 }
 
-uint8_t WS2812FX_isCycle() {
-  return WS2812FX_isCycle_seg(0);
+uint8_t WS2812FX_isCycle()
+{
+    return WS2812FX_isCycle_seg(0);
 }
 
-uint8_t WS2812FX_isCycle_seg(uint8_t seg) {
-  uint8_t* ptr = (uint8_t*)memchr(_active_segments, seg, _active_segments_len);
-  if(ptr == NULL) return false; // segment not active
-  return (_segment_runtimes[ptr - _active_segments].aux_param2 & CYCLE);
+uint8_t WS2812FX_isCycle_seg(uint8_t seg)
+{
+    uint8_t *ptr =
+        (uint8_t *)memchr(_active_segments, seg, _active_segments_len);
+    if (ptr == NULL)
+        return false; // segment not active
+    return (_segment_runtimes[ptr - _active_segments].aux_param2 & CYCLE);
 }
 
-void WS2812FX_setCycle() {
-  SET_CYCLE;
+void WS2812FX_setCycle()
+{
+    SET_CYCLE;
 }
 
-
-
-
-uint16_t WS2812FX_getSpeed(void) {
-  return WS2812FX_getSpeed_seg(0);
+uint16_t WS2812FX_getSpeed(void)
+{
+    return WS2812FX_getSpeed_seg(0);
 }
 
-uint16_t WS2812FX_getSpeed_seg(uint8_t seg) {
-  return _segments[seg].speed;
+uint16_t WS2812FX_getSpeed_seg(uint8_t seg)
+{
+    return _segments[seg].speed;
 }
 
-uint8_t WS2812FX_getOptions(uint8_t seg) {
-  return _segments[seg].options;
+uint8_t WS2812FX_getOptions(uint8_t seg)
+{
+    return _segments[seg].options;
 }
 
-uint16_t WS2812FX_getLength(void) {
-  return Adafruit_NeoPixel_numPixels();
+uint16_t WS2812FX_getLength(void)
+{
+    return Adafruit_NeoPixel_numPixels();
 }
 
-uint16_t WS2812FX_getNumBytes(void) {
-  return Adafruit_NeoPixel_getNumBytes();
+uint16_t WS2812FX_getNumBytes(void)
+{
+    return Adafruit_NeoPixel_getNumBytes();
 }
 
-uint8_t WS2812FX_getNumBytesPerPixel(void) {
-  return Adafruit_NeoPixel_getNumBytesPerPixel();
+uint8_t WS2812FX_getNumBytesPerPixel(void)
+{
+    return Adafruit_NeoPixel_getNumBytesPerPixel();
 }
 
-uint8_t WS2812FX_getModeCount(void) {
-  return MODE_COUNT;
+uint8_t WS2812FX_getModeCount(void)
+{
+    return MODE_COUNT;
 }
 
-uint8_t WS2812FX_getNumSegments(void) {
-  return _num_segments;
+uint8_t WS2812FX_getNumSegments(void)
+{
+    return _num_segments;
 }
 
-void WS2812FX_setNumSegments(uint8_t n) {
-  _num_segments = n;
+void WS2812FX_setNumSegments(uint8_t n)
+{
+    _num_segments = n;
 }
 
-uint32_t WS2812FX_getColor(void) {
-  return WS2812FX_getColor_seg(0);
+uint32_t WS2812FX_getColor(void)
+{
+    return WS2812FX_getColor_seg(0);
 }
 
-uint32_t WS2812FX_getColor_seg(uint8_t seg) {
-  return _segments[seg].colors[0];
+uint32_t WS2812FX_getColor_seg(uint8_t seg)
+{
+    return _segments[seg].colors[0];
 }
 
-uint32_t* WS2812FX_getColors(uint8_t seg) {
-  return _segments[seg].colors;
+uint32_t *WS2812FX_getColors(uint8_t seg)
+{
+    return _segments[seg].colors;
 }
 
-Segment* WS2812FX_getSegment(void) {
-  return _seg;
+Segment *WS2812FX_getSegment(void)
+{
+    return _seg;
 }
 
-Segment* WS2812FX_getSegment_seg(uint8_t seg) {
-  return &_segments[seg];
+Segment *WS2812FX_getSegment_seg(uint8_t seg)
+{
+    return &_segments[seg];
 }
 
-Segment* WS2812FX_getSegments(void) {
-  return _segments;
+Segment *WS2812FX_getSegments(void)
+{
+    return _segments;
 }
 
-Segment_runtime* WS2812FX_getSegmentRuntime(void) {
-  return _seg_rt;
+Segment_runtime *WS2812FX_getSegmentRuntime(void)
+{
+    return _seg_rt;
 }
 
-Segment_runtime* WS2812FX_getSegmentRuntime_seg(uint8_t seg) {
-  uint8_t* ptr = (uint8_t*)memchr(_active_segments, seg, _active_segments_len);
-  if(ptr == NULL) return NULL; // segment not active
-  return &_segment_runtimes[ptr - _active_segments];
+Segment_runtime *WS2812FX_getSegmentRuntime_seg(uint8_t seg)
+{
+    uint8_t *ptr =
+        (uint8_t *)memchr(_active_segments, seg, _active_segments_len);
+    if (ptr == NULL)
+        return NULL; // segment not active
+    return &_segment_runtimes[ptr - _active_segments];
 }
 
-Segment_runtime* WS2812FX_getSegmentRuntimes(void) {
-  return _segment_runtimes;
+Segment_runtime *WS2812FX_getSegmentRuntimes(void)
+{
+    return _segment_runtimes;
 }
 
-uint8_t* WS2812FX_getActiveSegments(void) {
-  return _active_segments;
+uint8_t *WS2812FX_getActiveSegments(void)
+{
+    return _active_segments;
 }
 
 //const __FlashStringHelper* WS2812FX_getModeName(uint8_t m) {
@@ -447,122 +507,168 @@ uint8_t* WS2812FX_getActiveSegments(void) {
 //  }
 //}
 
-void WS2812FX_setIdleSegment(uint8_t n, uint16_t start, uint16_t stop, mode_ptr mode, uint32_t color, uint16_t speed, uint8_t options) {
-  uint32_t colors[MAX_NUM_COLORS] = {color, 0, 0};
-  WS2812FX_setIdleSegment_colors(n, start, stop, mode, colors, speed, options);
+void WS2812FX_setIdleSegment(uint8_t n, uint16_t start, uint16_t stop,
+                             mode_ptr mode, uint32_t color, uint16_t speed,
+                             uint8_t options)
+{
+    uint32_t colors[MAX_NUM_COLORS] = {color, 0, 0};
+    WS2812FX_setIdleSegment_colors(n, start, stop, mode, colors, speed,
+                                   options);
 }
 
-void WS2812FX_setIdleSegment_colors(uint8_t n, uint16_t start, uint16_t stop, mode_ptr mode, uint32_t colors[], uint16_t speed, uint8_t options) {
-  WS2812FX_setSegment_colorsOptions(n, start, stop, mode, colors, speed, options);
-  if(n < _active_segments_len) WS2812FX_removeActiveSegment(n);;
+void WS2812FX_setIdleSegment_colors(uint8_t n, uint16_t start, uint16_t stop,
+                                    mode_ptr mode, uint32_t colors[],
+                                    uint16_t speed, uint8_t options)
+{
+    WS2812FX_setSegment_colorsOptions(n, start, stop, mode, colors, speed,
+                                      options);
+    if (n < _active_segments_len)
+        WS2812FX_removeActiveSegment(n);
+    ;
 }
 
-void WS2812FX_setSegment_colorReverse(uint8_t n, uint16_t start, uint16_t stop, mode_ptr mode, uint32_t color, uint16_t speed, uint8_t reverse) {
-  uint32_t colors[MAX_NUM_COLORS] = {color, 0, 0};
-  WS2812FX_setSegment_colorsOptions(n, start, stop, mode, colors, speed, (uint8_t)(reverse ? REVERSE : NO_OPTIONS));
+void WS2812FX_setSegment_colorReverse(uint8_t n, uint16_t start, uint16_t stop,
+                                      mode_ptr mode, uint32_t color,
+                                      uint16_t speed, uint8_t reverse)
+{
+    uint32_t colors[MAX_NUM_COLORS] = {color, 0, 0};
+    WS2812FX_setSegment_colorsOptions(
+        n, start, stop, mode, colors, speed,
+        (uint8_t)(reverse ? REVERSE : NO_OPTIONS));
 }
 
-void WS2812FX_setSegment_colorsReverse(uint8_t n, uint16_t start, uint16_t stop, mode_ptr mode, uint32_t colors[], uint16_t speed, uint8_t reverse) {
-  WS2812FX_setSegment_colorsOptions(n, start, stop, mode, colors, speed, (uint8_t)(reverse ? REVERSE : NO_OPTIONS));
+void WS2812FX_setSegment_colorsReverse(uint8_t n, uint16_t start, uint16_t stop,
+                                       mode_ptr mode, uint32_t colors[],
+                                       uint16_t speed, uint8_t reverse)
+{
+    WS2812FX_setSegment_colorsOptions(
+        n, start, stop, mode, colors, speed,
+        (uint8_t)(reverse ? REVERSE : NO_OPTIONS));
 }
 
-void WS2812FX_setSegment_colorOptions(uint8_t n, uint16_t start, uint16_t stop, mode_ptr mode, uint32_t color, uint16_t speed, uint8_t options) {
-  uint32_t colors[MAX_NUM_COLORS] = {color, 0, 0};
-  WS2812FX_setSegment_colorsOptions(n, start, stop, mode, colors, speed, options);
+void WS2812FX_setSegment_colorOptions(uint8_t n, uint16_t start, uint16_t stop,
+                                      mode_ptr mode, uint32_t color,
+                                      uint16_t speed, uint8_t options)
+{
+    uint32_t colors[MAX_NUM_COLORS] = {color, 0, 0};
+    WS2812FX_setSegment_colorsOptions(n, start, stop, mode, colors, speed,
+                                      options);
 }
 
-void WS2812FX_setSegment_colorsOptions(uint8_t n, uint16_t start, uint16_t stop, mode_ptr mode, uint32_t colors[], uint16_t speed, uint8_t options) {
-  if(n < _segments_len) {
-    if(n + 1 > _num_segments) _num_segments = n + 1;
-    _segments[n].start = start;
-    _segments[n].stop = stop;
-    _segments[n].mode = mode;
-    _segments[n].speed = speed;
-    _segments[n].options = options;
+void WS2812FX_setSegment_colorsOptions(uint8_t n, uint16_t start, uint16_t stop,
+                                       mode_ptr mode, uint32_t colors[],
+                                       uint16_t speed, uint8_t options)
+{
+    if (n < _segments_len) {
+        if (n + 1 > _num_segments)
+            _num_segments = n + 1;
+        _segments[n].start = start;
+        _segments[n].stop = stop;
+        _segments[n].mode = mode;
+        _segments[n].speed = speed;
+        _segments[n].options = options;
 
-    WS2812FX_setColors(n, (uint32_t*)colors);
+        WS2812FX_setColors(n, (uint32_t *)colors);
 
-    if(n < _active_segments_len) WS2812FX_addActiveSegment(n);
-  }
-}
-
-
-void WS2812FX_addActiveSegment(uint8_t seg) {
-  uint8_t* ptr = (uint8_t*)memchr(_active_segments, seg, _active_segments_len);
-  if(ptr != NULL) return; // segment already active
-  for(uint8_t i=0; i<_active_segments_len; i++) {
-    if(_active_segments[i] == INACTIVE_SEGMENT) {
-      _active_segments[i] = seg;
-      WS2812FX_resetSegmentRuntime(seg);
-      break;
+        if (n < _active_segments_len)
+            WS2812FX_addActiveSegment(n);
     }
-  }
 }
 
-void WS2812FX_removeActiveSegment(uint8_t seg) {
-  for(uint8_t i=0; i<_active_segments_len; i++) {
-    if(_active_segments[i] == seg) {
-      _active_segments[i] = INACTIVE_SEGMENT;
+void WS2812FX_addActiveSegment(uint8_t seg)
+{
+    uint8_t *ptr =
+        (uint8_t *)memchr(_active_segments, seg, _active_segments_len);
+    if (ptr != NULL)
+        return; // segment already active
+    for (uint8_t i = 0; i < _active_segments_len; i++) {
+        if (_active_segments[i] == INACTIVE_SEGMENT) {
+            _active_segments[i] = seg;
+            WS2812FX_resetSegmentRuntime(seg);
+            break;
+        }
     }
-  }
 }
 
-void WS2812FX_swapActiveSegment(uint8_t oldSeg, uint8_t newSeg) {
-  uint8_t* ptr = (uint8_t*)memchr(_active_segments, newSeg, _active_segments_len);
-  if(ptr != NULL) return; // if newSeg is already active, don't swap
-  for(uint8_t i=0; i<_active_segments_len; i++) {
-    if(_active_segments[i] == oldSeg) {
-      _active_segments[i] = newSeg;
-
-      // reset all runtime parameters EXCEPT next_time,
-      // allowing the current animation frame to complete
-      Segment_runtime seg_rt = _segment_runtimes[i];
-      seg_rt.counter_mode_step = 0;
-      seg_rt.counter_mode_call = 0;
-      seg_rt.aux_param = 0;
-      seg_rt.aux_param2 = 0;
-      seg_rt.aux_param3 = 0;
-      break;
+void WS2812FX_removeActiveSegment(uint8_t seg)
+{
+    for (uint8_t i = 0; i < _active_segments_len; i++) {
+        if (_active_segments[i] == seg) {
+            _active_segments[i] = INACTIVE_SEGMENT;
+        }
     }
-  }
 }
 
-uint8_t WS2812FX_isActiveSegment(uint8_t seg) {
-  uint8_t* ptr = (uint8_t*)memchr(_active_segments, seg, _active_segments_len);
-  if(ptr != NULL) return true;
-  return false;
+void WS2812FX_swapActiveSegment(uint8_t oldSeg, uint8_t newSeg)
+{
+    uint8_t *ptr =
+        (uint8_t *)memchr(_active_segments, newSeg, _active_segments_len);
+    if (ptr != NULL)
+        return; // if newSeg is already active, don't swap
+    for (uint8_t i = 0; i < _active_segments_len; i++) {
+        if (_active_segments[i] == oldSeg) {
+            _active_segments[i] = newSeg;
+
+            // reset all runtime parameters EXCEPT next_time,
+            // allowing the current animation frame to complete
+            Segment_runtime seg_rt = _segment_runtimes[i];
+            seg_rt.counter_mode_step = 0;
+            seg_rt.counter_mode_call = 0;
+            seg_rt.aux_param = 0;
+            seg_rt.aux_param2 = 0;
+            seg_rt.aux_param3 = 0;
+            break;
+        }
+    }
+}
+
+uint8_t WS2812FX_isActiveSegment(uint8_t seg)
+{
+    uint8_t *ptr =
+        (uint8_t *)memchr(_active_segments, seg, _active_segments_len);
+    if (ptr != NULL)
+        return true;
+    return false;
 }
 
 /* 调用改函数要重新初始化一次WS2812 */
-void WS2812FX_resetSegments() {
-  WS2812FX_resetSegmentRuntimes();
-  memset(_segments, 0, _segments_len * sizeof(Segment));
-  memset(_active_segments, INACTIVE_SEGMENT, _active_segments_len);
-  _num_segments = 0;
+void WS2812FX_resetSegments()
+{
+    WS2812FX_resetSegmentRuntimes();
+    memset(_segments, 0, _segments_len * sizeof(Segment));
+    memset(_active_segments, INACTIVE_SEGMENT, _active_segments_len);
+    _num_segments = 0;
 }
 
 /* 设置所以段无效 */
 void WS2812FX_setSegmentsInactive(void)
 {
-  memset(_active_segments, INACTIVE_SEGMENT, _active_segments_len);
+    memset(_active_segments, INACTIVE_SEGMENT, _active_segments_len);
 }
 
-void WS2812FX_resetSegmentRuntimes() {
-  memset(_segment_runtimes, 0, _active_segments_len * sizeof(Segment_runtime));
+void WS2812FX_resetSegmentRuntimes()
+{
+    memset(_segment_runtimes, 0,
+           _active_segments_len * sizeof(Segment_runtime));
 }
 
-void WS2812FX_resetSegmentRuntime(uint8_t seg) {
-  uint8_t* ptr = (uint8_t*)memchr(_active_segments, seg, _active_segments_len);
-  if(ptr == NULL) return; // segment not active
-  memset(&_segment_runtimes[ptr - _active_segments], 0, sizeof(Segment_runtime));
+void WS2812FX_resetSegmentRuntime(uint8_t seg)
+{
+    uint8_t *ptr =
+        (uint8_t *)memchr(_active_segments, seg, _active_segments_len);
+    if (ptr == NULL)
+        return; // segment not active
+    memset(&_segment_runtimes[ptr - _active_segments], 0,
+           sizeof(Segment_runtime));
 }
 
 /*
  * Turns everything off. Doh.
  */
-void WS2812FX_strip_off() {
-  Adafruit_NeoPixel_clear();
-  WS2812FX_show();
+void WS2812FX_strip_off()
+{
+    Adafruit_NeoPixel_clear();
+    WS2812FX_show();
 }
 
 /*
@@ -571,92 +677,68 @@ void WS2812FX_strip_off() {
  * Inspired by the Adafruit examples.
  * 输入数值0-255，输出颜色从红-》黄-》绿-》青-》蓝-》紫-》回到红
  */
-uint32_t WS2812FX_color_wheel(uint8_t pos) {
-  pos = 255 - pos;
-  if(pos < 85) {
-    return ((uint32_t)(255 - pos * 3) << 16) | ((uint32_t)(0) << 8) | (pos * 3);
-  } else if(pos < 170) {
-    pos -= 85;
-    return ((uint32_t)(0) << 16) | ((uint32_t)(pos * 3) << 8) | (255 - pos * 3);
-  } else {
-    pos -= 170;
-    return ((uint32_t)(pos * 3) << 16) | ((uint32_t)(255 - pos * 3) << 8) | (0);
-  }
+uint32_t WS2812FX_color_wheel(uint8_t pos)
+{
+    pos = 255 - pos;
+    if (pos < 85) {
+        return ((uint32_t)(255 - pos * 3) << 16) | ((uint32_t)(0) << 8) |
+               (pos * 3);
+    } else if (pos < 170) {
+        pos -= 85;
+        return ((uint32_t)(0) << 16) | ((uint32_t)(pos * 3) << 8) |
+               (255 - pos * 3);
+    } else {
+        pos -= 170;
+        return ((uint32_t)(pos * 3) << 16) | ((uint32_t)(255 - pos * 3) << 8) |
+               (0);
+    }
 }
 
 /*
  * Returns a new, random wheel index with a minimum distance of 42 from pos.
  输入pos，返回的数据距离pos最小42
  */
-uint8_t WS2812FX_get_random_wheel_index(uint8_t pos) {
-  uint8_t r = 0;
-  uint8_t x = 0;
-  uint8_t y = 0;
-  uint8_t d = 0;
+uint8_t WS2812FX_get_random_wheel_index(uint8_t pos)
+{
+    uint8_t r = 0;
+    uint8_t x = 0;
+    uint8_t y = 0;
+    uint8_t d = 0;
 
-  while(d < 42) {
-    r = WS2812FX_random8();
-    x = abs(pos - r);
-    y = 255 - x;
-    d = min(x, y);
-  }
+    while (d < 42) {
+        r = WS2812FX_random8();
+        x = abs(pos - r);
+        y = 255 - x;
+        d = min(x, y);
+    }
 
-  return r;
+    return r;
 }
 
 // fast 8-bit random number generator shamelessly borrowed from FastLED
-uint8_t WS2812FX_random8() {
+uint8_t WS2812FX_random8()
+{
     _rand16seed = (_rand16seed * 2053) + 13849;
     return (uint8_t)((_rand16seed + (_rand16seed >> 8)) & 0xFF);
 }
 
 // note random8(lim) generates numbers in the range 0 to (lim -1)
-uint8_t WS2812FX_random8_lim(uint8_t lim) {
+uint8_t WS2812FX_random8_lim(uint8_t lim)
+{
     uint8_t r = WS2812FX_random8();
     r = ((uint16_t)r * lim) >> 8;
     return r;
 }
 
-uint16_t WS2812FX_random16() {
+uint16_t WS2812FX_random16()
+{
     return (uint16_t)WS2812FX_random8() * 256 + WS2812FX_random8();
 }
 
 // note random16(lim) generates numbers in the range 0 to (lim - 1)
-uint16_t WS2812FX_random16_lim(uint16_t lim) {
+uint16_t WS2812FX_random16_lim(uint16_t lim)
+{
     uint16_t r = WS2812FX_random16();
     r = ((uint32_t)r * lim) >> 16;
     return r;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

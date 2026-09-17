@@ -258,19 +258,14 @@ static void spple_key_event_handler(struct sys_event *event)
 {
     /* u16 cpi = 0; */
     extern void ir_key_handle(struct sys_event *event);
-    extern void ad_key_handle(struct sys_event *event);
-    extern void rf24_key_handle(struct sys_event *event)；
+    extern void ad_key_handle(struct sys_event *event); 
     u8 event_type = 0;
     u8 key_value = 0;
 
     if (event->arg == (void *)DEVICE_EVENT_FROM_KEY) 
     {
         event_type = event->u.key.event;
-        key_value = event->u.key.value;
-        // ir_key_handle(event);
-        // ad_key_handle(event);
-        // io_key_handle(event);
-        // rf24_key_handle(event);
+        key_value = event->u.key.value; 
     } 
 }
 

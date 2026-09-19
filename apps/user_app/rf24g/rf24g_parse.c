@@ -140,7 +140,6 @@ static u8 rf24g_get_key_value(void)
             值 == 20，10ms调用一次该函数，这里填充200ms的超时值
         */
         time_out_cnt = 20;
-        // time_out_cnt = 5;
 
         last_key_value = key_value;
         return key_value;

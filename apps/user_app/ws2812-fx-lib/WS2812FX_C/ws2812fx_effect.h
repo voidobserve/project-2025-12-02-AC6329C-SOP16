@@ -89,7 +89,7 @@ uint16_t breath_w(void);
 uint16_t WS2812FX_mutil_strobe(void);
 uint16_t breath_rgb(void);
 
-
+uint16_t WS2812FX_mode_mutil_color_cycle_breath(void);
 
 /***************天奕光纤满天星流星效果*****************/
 

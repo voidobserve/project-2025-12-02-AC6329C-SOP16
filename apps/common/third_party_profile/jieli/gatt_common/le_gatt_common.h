@@ -6,6 +6,9 @@
 #include "app_config.h"
 #include "le_client_demo.h"
 #include "btcontroller_config.h"
+
+#include "ble_user.h"
+
 //注释编译宏，关闭蓝牙功能可以编译通过
 #if 1//TCFG_USER_BLE_ENABLE && CONFIG_BT_GATT_COMMON_ENABLE
 //----------------------------------------------------------------------------------------

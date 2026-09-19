@@ -9,16 +9,15 @@
 #include "user_config.h"
 
 #define CYCLE_T 0
-extern  Segment* _seg;
-extern  uint16_t _seg_len;
-extern Segment_runtime* _seg_rt;
+extern Segment *_seg;
+extern uint16_t _seg_len;
+extern Segment_runtime *_seg_rt;
 extern u8 get_effect_p(void);
 uint8_t music_trg = 0;
 uint8_t music_step = 0;
 uint8_t step2_flag, music_dly, change_mode, cycle_t;
 
 u8 ws2811fx_set_cycle; //1：效果跑完一轮
-
 
 //-----------------------------------------------天奕流星效果 -----------------------------------
 #pragma region
@@ -34,9 +33,8 @@ uint16_t WS2812FX_mode_comet_1(void)
 
     // printf("\n mode_cycle=%d",fc_effect.mode_cycle);
     // printf("\n fc_effect.period_cnt=%d",fc_effect.period_cnt);
-  //printf("_seg_len = %d", _seg_len);
-    if ((get_effect_p() == 1) && (fc_effect.mode_cycle == 1))
-    {
+    //printf("_seg_len = %d", _seg_len);
+    if ((get_effect_p() == 1) && (fc_effect.mode_cycle == 1)) {
         return (_seg->speed);
     }
     WS2812FX_fade_out();
@@ -52,26 +50,24 @@ uint16_t WS2812FX_mode_comet_1(void)
     // }
     offset = 13;
     if (IS_REVERSE) {
-        if (_seg_rt->aux_param == 0)
-        {
+        if (_seg_rt->aux_param == 0) {
             // _seg_rt->counter_mode_step = _seg->stop;
             _seg_rt->aux_param = 1;
         }
-        if ((_seg->stop - _seg->start) >= _seg_rt->counter_mode_step)
-        {
-            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, _seg->colors[0]);
+        if ((_seg->stop - _seg->start) >= _seg_rt->counter_mode_step) {
+            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                                   _seg->colors[0]);
             // printf("\n _seg_rt->counter_mode_step=%d",_seg_rt->counter_mode_step);
         }
-    }
-    else {
+    } else {
         if (_seg_rt->counter_mode_step < _seg->stop + 1)
-            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, _seg->colors[0]);
-
+            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step,
+                                   _seg->colors[0]);
     }
 
-    _seg_rt->counter_mode_step = (_seg_rt->counter_mode_step + 1) % (_seg_len + offset);
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    _seg_rt->counter_mode_step =
+        (_seg_rt->counter_mode_step + 1) % (_seg_len + offset);
+    if (_seg_rt->counter_mode_step == 0) {
         SET_CYCLE;
         fc_effect.mode_cycle = 1;
         // printf("\n fc_effect.mode_cycle=%d",fc_effect.mode_cycle);
@@ -79,7 +75,6 @@ uint16_t WS2812FX_mode_comet_1(void)
 
     return (_seg->speed);
 }
-
 
 /**
  * @brief 两段渐变灭灯流星  从中心靠拢或发散  兼容正反方向
@@ -92,47 +87,53 @@ uint16_t WS2812FX_mode_comet_2(void)
     // printf("\n fc_effect.mode_cycle=%d",fc_effect.mode_cycle);
     // printf("\n fc_effect.period_cnt=%d",fc_effect.period_cnt);
 
-
-    if ((get_effect_p() == 1) && (fc_effect.mode_cycle == 2))  //计时ms,运行时的计数器    //1:模式完成一个循环。0：正在跑，和meteor_period搭配用
+    if ((get_effect_p() == 1) &&
+        (fc_effect.mode_cycle ==
+         2)) //计时ms,运行时的计数器    //1:模式完成一个循环。0：正在跑，和meteor_period搭配用
     {
         return (_seg->speed); //步数，进度
     }
 
-    WS2812FX_fade_out();   //颜色弹出，类似渐变，效果工具 使用这个工具时，不需要另外灭灯
+    WS2812FX_fade_out(); //颜色弹出，类似渐变，效果工具 使用这个工具时，不需要另外灭灯
     // Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);   //全段填黑色，灭灯
     // extern u8 get_custom_index(void);
     u8 offset;
     offset = 6;
 
-    if (IS_REVERSE)
-    {
+    if (IS_REVERSE) {
         //中心向两边发散
         if (_seg_rt->counter_mode_step < (_seg_len / 2))
-            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, _seg->colors[0]);
+            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                                   _seg->colors[0]);
 
         if (_seg_rt->counter_mode_step < (_seg_len / 2))
-            WS2812FX_setPixelColor(_seg->stop / 2 - _seg_rt->counter_mode_step, _seg->colors[0]);
+            WS2812FX_setPixelColor(_seg->stop / 2 - _seg_rt->counter_mode_step,
+                                   _seg->colors[0]);
 
-    }
-    else {
+    } else {
         // 两段单灯流星灯，向中心靠拢
         if (_seg_rt->counter_mode_step < (_seg_len / 2))
-            WS2812FX_setPixelColor(_seg->start + (_seg_len / 2) + _seg_rt->counter_mode_step, _seg->colors[0]); //哪灯珠，填充颜色      _seg_rt->counter_mode_step(步数的意思) 从0开始
+            WS2812FX_setPixelColor(
+                _seg->start + (_seg_len / 2) + _seg_rt->counter_mode_step,
+                _seg->colors
+                    [0]); //哪灯珠，填充颜色      _seg_rt->counter_mode_step(步数的意思) 从0开始
 
         if (_seg_rt->counter_mode_step < (_seg_len / 2))
-            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, _seg->colors[0]);   //_seg->start 是从1开始，表示从段的
-
+            WS2812FX_setPixelColor(
+                _seg->start + _seg_rt->counter_mode_step,
+                _seg->colors[0]); //_seg->start 是从1开始，表示从段的
     }
 
-    _seg_rt->counter_mode_step = (_seg_rt->counter_mode_step + 1) % (_seg_len + offset);  //_seg_len 段的总长度 这条语句控制
+    _seg_rt->counter_mode_step =
+        (_seg_rt->counter_mode_step + 1) %
+        (_seg_len + offset); //_seg_len 段的总长度 这条语句控制
 
     //判断是否完成一段的循环
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         SET_CYCLE;
-        fc_effect.mode_cycle += 1;  //完成一个循环
+        fc_effect.mode_cycle += 1; //完成一个循环
     }
-    return (_seg->speed);  //返回流星速度
+    return (_seg->speed); //返回流星速度
 }
 
 /**
@@ -147,79 +148,90 @@ uint16_t WS2812FX_mode_comet_3(void)
 {
 
     uint8_t offset = 3;
-    if ((get_effect_p() == 1) && (fc_effect.mode_cycle == 1))  //计时中 && 完成一个循环
+    if ((get_effect_p() == 1) &&
+        (fc_effect.mode_cycle == 1)) //计时中 && 完成一个循环
     {
 
-        return (20);  //定频闪烁
+        return (20); //定频闪烁
     }
-    if (get_effect_p() == 0)  //计时完成
+    if (get_effect_p() == 0) //计时完成
     {
         Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);
     }
 
-    if (IS_REVERSE)  //反向
+    if (IS_REVERSE) //反向
     {
-        if (step2_flag)  //第一次执行先执行else
+        if (step2_flag) //第一次执行先执行else
         {
             if (_seg_rt->counter_mode_step < _seg_len)
-                WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, BLACK);
+                WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                                       BLACK);
             //控制多闪烁流水
-            if (_seg_rt->counter_mode_step > 0 && _seg_rt->counter_mode_step < (_seg_len + 1))
-                WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step + 1, BLACK);
-            if (_seg_rt->counter_mode_step > 1 && _seg_rt->counter_mode_step < (_seg_len + 2))
-                WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step + 2, BLACK);
+            if (_seg_rt->counter_mode_step > 0 &&
+                _seg_rt->counter_mode_step < (_seg_len + 1))
+                WS2812FX_setPixelColor(
+                    _seg->stop - _seg_rt->counter_mode_step + 1, BLACK);
+            if (_seg_rt->counter_mode_step > 1 &&
+                _seg_rt->counter_mode_step < (_seg_len + 2))
+                WS2812FX_setPixelColor(
+                    _seg->stop - _seg_rt->counter_mode_step + 2, BLACK);
             meteor_twinkling_cnt++;
-        }
-        else
-        {
+        } else {
             if (_seg_rt->counter_mode_step < _seg_len)
-                WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, WHITE);
+                WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                                       WHITE);
             //控制多闪烁流水
-            if (_seg_rt->counter_mode_step > 0 && _seg_rt->counter_mode_step < (_seg_len + 1))
-                WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step + 1, WHITE);
-            if (_seg_rt->counter_mode_step > 1 && _seg_rt->counter_mode_step < (_seg_len + 2))
-                WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step + 2, WHITE);
+            if (_seg_rt->counter_mode_step > 0 &&
+                _seg_rt->counter_mode_step < (_seg_len + 1))
+                WS2812FX_setPixelColor(
+                    _seg->stop - _seg_rt->counter_mode_step + 1, WHITE);
+            if (_seg_rt->counter_mode_step > 1 &&
+                _seg_rt->counter_mode_step < (_seg_len + 2))
+                WS2812FX_setPixelColor(
+                    _seg->stop - _seg_rt->counter_mode_step + 2, WHITE);
             meteor_twinkling_cnt++;
         }
 
-
-    }
-    else  //正向
+    } else //正向
     {
 
-        if (step2_flag)  //第一次执行先执行else
+        if (step2_flag) //第一次执行先执行else
         {
-            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, BLACK);
+            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step,
+                                   BLACK);
             //控制多闪烁流水
             if (_seg_rt->counter_mode_step > 0)
-                WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - 1, BLACK);
+                WS2812FX_setPixelColor(
+                    _seg->start + _seg_rt->counter_mode_step - 1, BLACK);
             if (_seg_rt->counter_mode_step > 1)
-                WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - 2, BLACK);
+                WS2812FX_setPixelColor(
+                    _seg->start + _seg_rt->counter_mode_step - 2, BLACK);
             meteor_twinkling_cnt++;
-        }
-        else
-        {
-            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, WHITE);
+        } else {
+            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step,
+                                   WHITE);
             if (_seg_rt->counter_mode_step > 0)
-                WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - 1, WHITE);
+                WS2812FX_setPixelColor(
+                    _seg->start + _seg_rt->counter_mode_step - 1, WHITE);
             if (_seg_rt->counter_mode_step > 1)
-                WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - 2, WHITE);
+                WS2812FX_setPixelColor(
+                    _seg->start + _seg_rt->counter_mode_step - 2, WHITE);
             meteor_twinkling_cnt++;
         }
-
     }
 
     /*不可改动以下代码位置*/
     step2_flag = ~step2_flag;
 
-    meteor_twinkling_cnt %= (_seg->speed / 20 * 4);  //闪烁次数判断
+    meteor_twinkling_cnt %= (_seg->speed / 20 * 4); //闪烁次数判断
     meteor_twinkling_speed = meteor_twinkling_cnt;
 
-    if (!meteor_twinkling_speed)  //控制流水速度
+    if (!meteor_twinkling_speed) //控制流水速度
     {
         _seg_rt->counter_mode_step++;
         _seg_rt->counter_mode_step %= _seg_len + 6;
-        if (_seg_rt->counter_mode_step == 0)   //完成一段灯的效果或者是完成一个效果周期
+        if (_seg_rt->counter_mode_step ==
+            0) //完成一段灯的效果或者是完成一个效果周期
         {
             SET_CYCLE;
             fc_effect.mode_cycle = 1;
@@ -227,10 +239,9 @@ uint16_t WS2812FX_mode_comet_3(void)
     }
 
     //20，定频闪
-    return (20);  //返回计数器结果（这个注释是控制）  这是控制流水的流水速度  控制函数调用的时间，10就是10ms一次，100是100ms一次
-
+    return (
+        20); //返回计数器结果（这个注释是控制）  这是控制流水的流水速度  控制函数调用的时间，10就是10ms一次，100是100ms一次
 }
-
 
 /**
  * @brief 3个灯流水，长度为5个灯，然后另外5个灯随机闪
@@ -240,47 +251,51 @@ uint16_t WS2812FX_mode_comet_3(void)
 
 uint16_t meteor_effect_G(void)
 {
-    if ((get_effect_p() == 1) && (fc_effect.mode_cycle == 1))  //计时中 && 完成一个循环
+    if ((get_effect_p() == 1) &&
+        (fc_effect.mode_cycle == 1)) //计时中 && 完成一个循环
     {
         return (_seg->speed);
     }
 
+    if (_seg_rt->counter_mode_step < _seg_len / 2) {
 
-    if (_seg_rt->counter_mode_step < _seg_len / 2)
-    {
-
-        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, WHITE); //第一组 1-5
-
+        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step,
+                               WHITE); //第一组 1-5
     }
-    if (_seg_rt->counter_mode_step > (_seg_len / 2 - 3) && _seg_rt->counter_mode_step < _seg_len)
-    {
+    if (_seg_rt->counter_mode_step > (_seg_len / 2 - 3) &&
+        _seg_rt->counter_mode_step < _seg_len) {
 
-        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - (_seg_len / 2 - 2), BLACK);
-
+        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step -
+                                   (_seg_len / 2 - 2),
+                               BLACK);
     }
 
-    if (_seg_rt->counter_mode_step > _seg_len - 2)  //随机闪
+    if (_seg_rt->counter_mode_step > _seg_len - 2) //随机闪
     {
 
-        Adafruit_NeoPixel_fill(BLACK, (_seg_len / 2 + 1) + _seg_rt->aux_param3, 1);
-        _seg_rt->aux_param3 = WS2812FX_random16_lim(_seg_len / 2); // aux_param3 stores the random led index
-        Adafruit_NeoPixel_fill(WHITE, (_seg_len / 2 + 1) + _seg_rt->aux_param3, 1);
-        _seg_rt->aux_param3 = WS2812FX_random16_lim(_seg_len / 2); // aux_param3 stores the random led index
-        Adafruit_NeoPixel_fill(WHITE, (_seg_len / 2 + 1) + _seg_rt->aux_param3, 1);
-        _seg_rt->aux_param3 = WS2812FX_random16_lim(_seg_len - 1); // aux_param3 stores the random led index
-        Adafruit_NeoPixel_fill(BLACK, (_seg_len / 2 + 1) + _seg_rt->aux_param3, 1);
-
+        Adafruit_NeoPixel_fill(BLACK, (_seg_len / 2 + 1) + _seg_rt->aux_param3,
+                               1);
+        _seg_rt->aux_param3 = WS2812FX_random16_lim(
+            _seg_len / 2); // aux_param3 stores the random led index
+        Adafruit_NeoPixel_fill(WHITE, (_seg_len / 2 + 1) + _seg_rt->aux_param3,
+                               1);
+        _seg_rt->aux_param3 = WS2812FX_random16_lim(
+            _seg_len / 2); // aux_param3 stores the random led index
+        Adafruit_NeoPixel_fill(WHITE, (_seg_len / 2 + 1) + _seg_rt->aux_param3,
+                               1);
+        _seg_rt->aux_param3 = WS2812FX_random16_lim(
+            _seg_len - 1); // aux_param3 stores the random led index
+        Adafruit_NeoPixel_fill(BLACK, (_seg_len / 2 + 1) + _seg_rt->aux_param3,
+                               1);
     }
     _seg_rt->counter_mode_step++;
     _seg_rt->counter_mode_step %= _seg_len * 2;
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         SET_CYCLE;
         fc_effect.mode_cycle = 1;
         Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);
     }
-    return (_seg->speed);  //返回计数器结果
-
+    return (_seg->speed); //返回计数器结果
 }
 /**
  * @brief 3个灯流水，长度为5个灯，两次流水，然后另外5个灯随机闪
@@ -290,12 +305,13 @@ uint16_t meteor_effect_G(void)
 uint16_t meteor_effect_H(void)
 {
     uint8_t offset = 5;
-    if ((get_effect_p() == 1) && (fc_effect.mode_cycle == 1))  //计时中 && 完成一个循环
+    if ((get_effect_p() == 1) &&
+        (fc_effect.mode_cycle == 1)) //计时中 && 完成一个循环
     {
         return (_seg->speed);
     }
     //每次从其他效果切换过来时，将上一个效果亮的灯清除
-    if (get_effect_p() == 0)  //计时完成
+    if (get_effect_p() == 0) //计时完成
     {
         Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);
     }
@@ -303,43 +319,51 @@ uint16_t meteor_effect_H(void)
     if (_seg_rt->counter_mode_step < _seg_len / 2)
         WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, WHITE);
 
-    if (_seg_rt->counter_mode_step > (_seg_len / 2 - 3) && _seg_rt->counter_mode_step < _seg_len)
-        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - (_seg_len / 2 - 2), BLACK);
+    if (_seg_rt->counter_mode_step > (_seg_len / 2 - 3) &&
+        _seg_rt->counter_mode_step < _seg_len)
+        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step -
+                                   (_seg_len / 2 - 2),
+                               BLACK);
     //跑第二次
-    if (_seg_rt->counter_mode_step > _seg_len / 2 + 1 && _seg_rt->counter_mode_step <= _seg_len + 1)
-        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - (_seg_len / 2 + 2), WHITE);
+    if (_seg_rt->counter_mode_step > _seg_len / 2 + 1 &&
+        _seg_rt->counter_mode_step <= _seg_len + 1)
+        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step -
+                                   (_seg_len / 2 + 2),
+                               WHITE);
 
     if (_seg_rt->counter_mode_step > _seg_len - 1)
-        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - (_seg_len), BLACK);  //-9
-
+        WS2812FX_setPixelColor(
+            _seg->start + _seg_rt->counter_mode_step - (_seg_len), BLACK); //-9
 
     //随机闪
-    if (_seg_rt->counter_mode_step > _seg_len * 2)
-    {
+    if (_seg_rt->counter_mode_step > _seg_len * 2) {
 
-        Adafruit_NeoPixel_fill(BLACK, (_seg_len / 2 + 1) + _seg_rt->aux_param3, 1);
-        _seg_rt->aux_param3 = WS2812FX_random16_lim(_seg_len / 2); // aux_param3 stores the random led index
-        Adafruit_NeoPixel_fill(WHITE, (_seg_len / 2 + 1) + _seg_rt->aux_param3, 1);
-        _seg_rt->aux_param3 = WS2812FX_random16_lim(_seg_len / 2); // aux_param3 stores the random led index
-        Adafruit_NeoPixel_fill(WHITE, (_seg_len / 2 + 1) + _seg_rt->aux_param3, 1);
-        _seg_rt->aux_param3 = WS2812FX_random16_lim(_seg_len - 1); // aux_param3 stores the random led index
-        Adafruit_NeoPixel_fill(BLACK, (_seg_len / 2 + 1) + _seg_rt->aux_param3, 1);
-
+        Adafruit_NeoPixel_fill(BLACK, (_seg_len / 2 + 1) + _seg_rt->aux_param3,
+                               1);
+        _seg_rt->aux_param3 = WS2812FX_random16_lim(
+            _seg_len / 2); // aux_param3 stores the random led index
+        Adafruit_NeoPixel_fill(WHITE, (_seg_len / 2 + 1) + _seg_rt->aux_param3,
+                               1);
+        _seg_rt->aux_param3 = WS2812FX_random16_lim(
+            _seg_len / 2); // aux_param3 stores the random led index
+        Adafruit_NeoPixel_fill(WHITE, (_seg_len / 2 + 1) + _seg_rt->aux_param3,
+                               1);
+        _seg_rt->aux_param3 = WS2812FX_random16_lim(
+            _seg_len - 1); // aux_param3 stores the random led index
+        Adafruit_NeoPixel_fill(BLACK, (_seg_len / 2 + 1) + _seg_rt->aux_param3,
+                               1);
     }
-
 
     _seg_rt->counter_mode_step++;
     _seg_rt->counter_mode_step %= _seg_len * 3;
 
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         SET_CYCLE;
         fc_effect.mode_cycle = 1;
         Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);
     }
 
-
-    return (_seg->speed);  //返回计数器结果
+    return (_seg->speed); //返回计数器结果
 }
 
 /**
@@ -350,54 +374,43 @@ uint16_t meteor_effect_H(void)
 uint16_t WS2812FX_mode_comet_4(void)
 {
 
-    if ((get_effect_p() == 1) && (fc_effect.mode_cycle == 1))  //计时中 && 完成一个循环
+    if ((get_effect_p() == 1) &&
+        (fc_effect.mode_cycle == 1)) //计时中 && 完成一个循环
     {
         return (_seg->speed);
     }
 
-    if (IS_REVERSE)
-    {
+    if (IS_REVERSE) {
 
-        if (_seg_rt->counter_mode_step < _seg_len)
-        {
-            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, WHITE);
-        }
-        else
-        {
+        if (_seg_rt->counter_mode_step < _seg_len) {
+            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                                   WHITE);
+        } else {
 
-            WS2812FX_setPixelColor(2 * _seg_len - _seg_rt->counter_mode_step, BLACK);
+            WS2812FX_setPixelColor(2 * _seg_len - _seg_rt->counter_mode_step,
+                                   BLACK);
         }
 
+    } else {
 
-    }
-    else
-    {
+        if (_seg_rt->counter_mode_step < _seg_len) {
+            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step,
+                                   WHITE);
+        } else {
 
-        if (_seg_rt->counter_mode_step < _seg_len)
-        {
-            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, WHITE);
+            WS2812FX_setPixelColor(
+                _seg->start + _seg_rt->counter_mode_step - _seg_len, BLACK);
         }
-        else
-        {
-
-            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - _seg_len, BLACK);
-        }
-
     }
 
     _seg_rt->counter_mode_step++;
     _seg_rt->counter_mode_step %= _seg_len * 2;
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         SET_CYCLE;
         fc_effect.mode_cycle = 1;
-
     }
-    return (_seg->speed);  //返回计数器结果
-
-
+    return (_seg->speed); //返回计数器结果
 }
-
 
 /**
  * @brief 逐点流水 兼容正反方向
@@ -406,35 +419,31 @@ uint16_t WS2812FX_mode_comet_4(void)
  */
 uint16_t WS2812FX_mode_comet_5(void)
 {
-    if ((get_effect_p() == 1) && (fc_effect.mode_cycle == 1))  //计时中 && 完成一个循环
+    if ((get_effect_p() == 1) &&
+        (fc_effect.mode_cycle == 1)) //计时中 && 完成一个循环
     {
         return (_seg->speed);
     }
     u8 offset = 1;
-    if (IS_REVERSE)
-    {
-        Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);   //全段填黑色，灭灯
+    if (IS_REVERSE) {
+        Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len); //全段填黑色，灭灯
         if (_seg_rt->counter_mode_step < _seg_len)
-            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, WHITE);
+            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                                   WHITE);
 
-    }
-    else
-    {
-        Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);   //全段填黑色，灭灯
+    } else {
+        Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len); //全段填黑色，灭灯
         WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, WHITE);
-
     }
     _seg_rt->counter_mode_step++;
     _seg_rt->counter_mode_step %= _seg_len + offset;
 
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         SET_CYCLE;
-        Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);   //全段填黑色，灭灯
+        Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len); //全段填黑色，灭灯
         fc_effect.mode_cycle = 1;
     }
-    return (_seg->speed);  //返回计数器结果
-
+    return (_seg->speed); //返回计数器结果
 }
 
 /**
@@ -446,70 +455,72 @@ uint16_t WS2812FX_mode_comet_5(void)
 uint16_t fc_double_meteor(void)
 {
 
-    if ((get_effect_p() == 1) && (fc_effect.mode_cycle == 1))  //计时中 && 完成一个循环
+    if ((get_effect_p() == 1) &&
+        (fc_effect.mode_cycle == 1)) //计时中 && 完成一个循环
     {
         return (_seg->speed);
     }
     u8 offset = _seg_len / 2 + 1;
     WS2812FX_fade_out();
 
-    if (IS_REVERSE)  //反向
+    if (IS_REVERSE) //反向
     {
-        if (_seg_rt->counter_mode_step < _seg_len / 2)
-        {
-            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, WHITE); //第一组 1-5
+        if (_seg_rt->counter_mode_step < _seg_len / 2) {
+            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                                   WHITE); //第一组 1-5
         }
-        if (_seg_rt->counter_mode_step >= _seg_len / 2 && _seg_rt->counter_mode_step < _seg_len)
-        {
-            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, WHITE); //第二组
-        }
-
-        if (_seg_rt->counter_mode_step > _seg_len / 2 && _seg_rt->counter_mode_step < (_seg_len + 9)) //第一组第二次
-        {
-            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step + (_seg_len / 2 + 1), WHITE);
+        if (_seg_rt->counter_mode_step >= _seg_len / 2 &&
+            _seg_rt->counter_mode_step < _seg_len) {
+            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                                   WHITE); //第二组
         }
 
-        if (_seg_rt->counter_mode_step > 3 && _seg_rt->counter_mode_step < (_seg_len + 4))
+        if (_seg_rt->counter_mode_step > _seg_len / 2 &&
+            _seg_rt->counter_mode_step < (_seg_len + 9)) //第一组第二次
         {
-            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step + (_seg_len / 2 - 1), BLACK); //
+            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step +
+                                       (_seg_len / 2 + 1),
+                                   WHITE);
         }
 
+        if (_seg_rt->counter_mode_step > 3 &&
+            _seg_rt->counter_mode_step < (_seg_len + 4)) {
+            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step +
+                                       (_seg_len / 2 - 1),
+                                   BLACK); //
+        }
 
-    }
-    else  //正向
+    } else //正向
     {
-        if (_seg_rt->counter_mode_step < _seg_len)
-        {
-            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, WHITE); //第一段
+        if (_seg_rt->counter_mode_step < _seg_len) {
+            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step,
+                                   WHITE); //第一段
         }
         // if(_seg_rt->counter_mode_step >= _seg_len / 2 )
         // {
         //   WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - (_seg_len / 2 -1 ), WHITE);  //第一段
         // }
 
-        if (_seg_rt->counter_mode_step >= _seg_len / 2)
-        {
-            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - _seg_len / 2, WHITE);   //第二段
+        if (_seg_rt->counter_mode_step >= _seg_len / 2) {
+            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step -
+                                       _seg_len / 2,
+                                   WHITE); //第二段
         }
-        if (_seg_rt->counter_mode_step > 3)
-        {
-            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - 4, BLACK);
+        if (_seg_rt->counter_mode_step > 3) {
+            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step - 4,
+                                   BLACK);
         }
-
     }
 
     _seg_rt->counter_mode_step++;
     _seg_rt->counter_mode_step %= _seg_len * 2 + offset;
 
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         SET_CYCLE;
         fc_effect.mode_cycle == 1;
         // Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);   //全段填黑色，灭灯
     }
-    return (_seg->speed);  //返回速度
-
-
+    return (_seg->speed); //返回速度
 }
 
 /**
@@ -520,57 +531,48 @@ uint16_t fc_double_meteor(void)
 uint16_t WS2812FX_mode_comet_6(void)
 {
 
-    if ((get_effect_p() == 1) && (fc_effect.mode_cycle == 1))  //计时中 && 完成一个循环
+    if ((get_effect_p() == 1) &&
+        (fc_effect.mode_cycle == 1)) //计时中 && 完成一个循环
     {
         return (_seg->speed);
     }
     u8 offset = 1;
-    if (IS_REVERSE)
-    {
+    if (IS_REVERSE) {
 
-        Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);   //全段填黑色，灭灯
+        Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len); //全段填黑色，灭灯
         if (_seg_rt->counter_mode_step < _seg_len)
-            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, WHITE); //灯珠填充颜色
+            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                                   WHITE); //灯珠填充颜色
         if (_seg_rt->counter_mode_step < _seg_len - 1)
-            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step - 1, WHITE);
+            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step - 1,
+                                   WHITE);
 
-    }
-    else   //正向
+    } else //正向
     {
-        Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);   //全段填黑色，灭灯
+        Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len); //全段填黑色，灭灯
         WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, WHITE);
-        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step + 1, WHITE);
+        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step + 1,
+                               WHITE);
     }
 
     _seg_rt->counter_mode_step++;
     _seg_rt->counter_mode_step %= _seg_len + offset;
 
-
-    if (_seg_rt->counter_mode_step == 0)
-    {
-        Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);   //全段填黑色，灭灯
+    if (_seg_rt->counter_mode_step == 0) {
+        Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len); //全段填黑色，灭灯
         SET_CYCLE;
         fc_effect.mode_cycle = 1;
-
     }
-    return (_seg->speed);  //返回速度 （函数执行的定时时间）
-
-
+    return (_seg->speed); //返回速度 （函数执行的定时时间）
 }
 
 void close_metemor(void)
 {
-    Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);   //全段填黑色，灭灯
+    Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len); //全段填黑色，灭灯
 }
-
-
-
-
-
 
 #pragma endregion
 //-----------------------------------------------天奕流星效果 END-----------------------------------
-
 
 //--------------------------------------------------声控流星效果--------------------------------------
 #pragma region
@@ -586,46 +588,39 @@ uint16_t music_mode1(void)
     static u8 no_trg_cnt = 0;
     extern u8 get_sound_result(void);
     // const u8 rate[12] = {0,1,1,2,2,3,3,4,5,5,6,6};
-    const u8 rate[12] = { 253,250,240,230,220,200,180,130,100,75,50,0 };
+    const u8 rate[12] = {253, 250, 240, 230, 220, 200,
+                         180, 130, 100, 75,  50,  0};
 
-    if (get_sound_result())
-    {
+    if (get_sound_result()) {
         uint32_t color = _seg->colors[0];
         int w1 = (color >> 24) & 0xff;
         int r1 = (color >> 16) & 0xff;
         int g1 = (color >> 8) & 0xff;
         int b1 = color & 0xff;
 
-
-        WS2812FX_setPixelColor_rgbw(_seg->start + trg_cnt, r1 - rate[trg_cnt], g1 - rate[trg_cnt], b1 - rate[trg_cnt], w1 - rate[trg_cnt]);
+        WS2812FX_setPixelColor_rgbw(_seg->start + trg_cnt, r1 - rate[trg_cnt],
+                                    g1 - rate[trg_cnt], b1 - rate[trg_cnt],
+                                    w1 - rate[trg_cnt]);
 
         // WS2812FX_setPixelColor(_seg->start+trg_cnt , _seg->colors[0] );
-        if (trg_cnt < _seg_len)
-        {
+        if (trg_cnt < _seg_len) {
             trg_cnt++;
             no_trg_cnt = 0;
-        }
-        else
-        {
+        } else {
             // trg_cnt = 0;
         }
-    }
-    else
-    {
+    } else {
         WS2812FX_setPixelColor(_seg->start + trg_cnt, BLACK);
         no_trg_cnt++;
-        if (no_trg_cnt >= 3)
-        {
+        if (no_trg_cnt >= 3) {
             no_trg_cnt = 0;
-            if (trg_cnt > 0)
-            {
+            if (trg_cnt > 0) {
                 trg_cnt--;
             }
         }
     }
     return 30;
 }
-
 
 // 流星发射，声音触发，不支持连续发射，等上个流星发射完成再发射第二个
 
@@ -634,19 +629,17 @@ uint16_t meteor(void)
 
     static uint8_t i = 0, trg;
     uint32_t r1, g1, b1, w1;
-    const uint8_t rate[MAX_RATE] = { 100,88,75,55,30,10,0,0 };
+    const uint8_t rate[MAX_RATE] = {100, 88, 75, 55, 30, 10, 0, 0};
     int w = (_seg->colors[0] >> 24) & 0xff;
     int r = (_seg->colors[0] >> 16) & 0xff;
     int g = (_seg->colors[0] >> 8) & 0xff;
     int b = _seg->colors[0] & 0xff;
     extern u8 get_sound_result(void);
-    if (get_sound_result())
-    {
+    if (get_sound_result()) {
         trg = 1;
     }
 
-    if (trg)
-    {
+    if (trg) {
         WS2812FX_copyPixels(_seg->start + 1, _seg->start, _seg_len - 1);
 
         r1 = r * rate[i] / 100;
@@ -659,14 +652,12 @@ uint16_t meteor(void)
             i++;
 
         _seg_rt->counter_mode_step++;
-        if (_seg_rt->counter_mode_step >= _seg_len + 8)
-        {
+        if (_seg_rt->counter_mode_step >= _seg_len + 8) {
             trg = 0;
             _seg_rt->counter_mode_step = 0;
             i = 0;
         }
     }
-
 
     // if(i>0)
     // i--;
@@ -683,16 +674,14 @@ uint16_t meteor1(void)
 
     static uint8_t i = 0, trg;
     uint32_t r1, g1, b1, w1;
-    const uint8_t rate[MAX_RATE] = { 100,75,50,25,10,0,0,0 };
+    const uint8_t rate[MAX_RATE] = {100, 75, 50, 25, 10, 0, 0, 0};
     int w = (_seg->colors[0] >> 24) & 0xff;
     int r = (_seg->colors[0] >> 16) & 0xff;
     int g = (_seg->colors[0] >> 8) & 0xff;
     int b = _seg->colors[0] & 0xff;
     extern u8 get_sound_result(void);
-    if (get_sound_result())
-    {
-        if (i == MAX_RATE - 1)
-        {
+    if (get_sound_result()) {
+        if (i == MAX_RATE - 1) {
             i = 0;
             printf("\n i=%d", i);
         }
@@ -705,8 +694,6 @@ uint16_t meteor1(void)
     w1 = w * rate[i] / 100;
     WS2812FX_setPixelColor_rgbw(_seg->start, r1, g1, b1, w1);
 
-
-
     if (i < MAX_RATE - 1)
         i++;
 
@@ -718,23 +705,20 @@ uint16_t meteor1(void)
     return (30);
 }
 
-
 // 流星发射，声音触发，可以连续发射
 uint16_t music_meteor3(void)
 {
 
     static uint8_t i = 0, trg;
     uint32_t r1, g1, b1, w1;
-    const uint8_t rate[MAX_RATE] = { 100,75,50,25,10,0,0,0 };
+    const uint8_t rate[MAX_RATE] = {100, 75, 50, 25, 10, 0, 0, 0};
     int w = (_seg->colors[0] >> 24) & 0xff;
     int r = (_seg->colors[0] >> 16) & 0xff;
     int g = (_seg->colors[0] >> 8) & 0xff;
     int b = _seg->colors[0] & 0xff;
     extern u8 get_sound_result(void);
-    if (get_sound_result())
-    {
-        if (i == MAX_RATE - 1)
-        {
+    if (get_sound_result()) {
+        if (i == MAX_RATE - 1) {
             i = 0;
         }
     }
@@ -745,8 +729,6 @@ uint16_t music_meteor3(void)
     b1 = b * rate[i] / 100;
     w1 = w * rate[i] / 100;
     WS2812FX_setPixelColor_rgbw(_seg->stop, r1, g1, b1, w1);
-
-
 
     if (i < MAX_RATE - 1)
         i++;
@@ -766,13 +748,10 @@ uint16_t music_mode2(void)
     Adafruit_NeoPixel_fill(WHITE, _seg->start, _seg_len);
     extern u8 get_sound_result(void);
 
-    if (get_sound_result())
-    {
+    if (get_sound_result()) {
         b = 255;
         WS2812FX_setBrightness(255);
-    }
-    else
-    {
+    } else {
         // if(b>10)
         //   b-=10;
         // else
@@ -784,7 +763,6 @@ uint16_t music_mode2(void)
 #pragma endregion
 //---------------------------------------------------声控流星效果 END---------------------------------
 
-
 //---------------------------------------------------流星效果II ---------------------------------
 #pragma region
 // 正向移动某一段
@@ -795,17 +773,16 @@ void WS2812FX_move_forward(u16 s, u16 e)
 {
     u16 i;
 
-    if (s > e) return;
+    if (s > e)
+        return;
     uint32_t c = Adafruit_NeoPixel_getOriginPixelColor(e);
 
-    for (i = 0;i < e - s;i++)
-    {
+    for (i = 0; i < e - s; i++) {
         WS2812FX_copyPixels(s + i + 1, s + i, 1);
     }
 
     // Adafruit_NeoPixel_setPixelColor_raw(s, c);
 }
-
 
 // 0:正向堆积
 // 1：反向堆积
@@ -819,8 +796,7 @@ void WS2812FX_move_forward(u16 s, u16 e)
 void cycle_cnt(void)
 {
     cycle_t++;
-    if (cycle_t > CYCLE_T)
-    {
+    if (cycle_t > CYCLE_T) {
         cycle_t = 0;
         change_mode = 1;
         music_step++;
@@ -833,14 +809,14 @@ void mode1(void)
 {
     music_dly = 30;
 
-    Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);   //全段填黑色，灭灯
-    WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step, WHITE); //灯珠填充颜色
+    Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len); //全段填黑色，灭灯
+    WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step,
+                           WHITE); //灯珠填充颜色
     WS2812FX_setPixelColor(_seg_len - _seg_rt->counter_mode_step, WHITE);
     _seg_rt->counter_mode_step += 1;
     _seg_rt->counter_mode_step %= _seg_len;
 
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         cycle_cnt();
     }
 }
@@ -854,8 +830,7 @@ void mode2(void)
     WS2812FX_setPixelColor(_seg_rt->counter_mode_step + 1, WHITE);
     _seg_rt->counter_mode_step += 1;
     _seg_rt->counter_mode_step %= _seg_len;
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         cycle_cnt();
     }
 }
@@ -870,11 +845,11 @@ void mode3(void)
     WS2812FX_setPixelColor(_seg_rt->counter_mode_step + 1, WHITE);
     //实现从一般开始
     WS2812FX_setPixelColor(_seg_len / 2 + _seg_rt->counter_mode_step, WHITE);
-    WS2812FX_setPixelColor(_seg_len / 2 + _seg_rt->counter_mode_step + 1, WHITE);
+    WS2812FX_setPixelColor(_seg_len / 2 + _seg_rt->counter_mode_step + 1,
+                           WHITE);
     _seg_rt->counter_mode_step += 1;
     _seg_rt->counter_mode_step %= _seg_len;
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         cycle_cnt();
     }
 }
@@ -888,12 +863,12 @@ void mode4(void)
     WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step, WHITE);
     WS2812FX_setPixelColor(_seg_len - _seg_rt->counter_mode_step, WHITE);
 
-    WS2812FX_setPixelColor(_seg_len / 2 - 1 - _seg_rt->counter_mode_step, WHITE);
+    WS2812FX_setPixelColor(_seg_len / 2 - 1 - _seg_rt->counter_mode_step,
+                           WHITE);
     WS2812FX_setPixelColor(_seg_len / 2 - _seg_rt->counter_mode_step, WHITE);
     _seg_rt->counter_mode_step += 1;
     _seg_rt->counter_mode_step %= _seg_len;
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         cycle_cnt();
     }
 }
@@ -902,16 +877,15 @@ void mode4(void)
 void mode5(void)
 {
     Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);
-    if (_seg_rt->counter_mode_step < _seg_len / 2)
-    {
+    if (_seg_rt->counter_mode_step < _seg_len / 2) {
 
         WS2812FX_setPixelColor(_seg_rt->counter_mode_step, WHITE);
-        WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step, WHITE);
+        WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step,
+                               WHITE);
     }
     _seg_rt->counter_mode_step += 1;
     _seg_rt->counter_mode_step %= _seg_len / 2;
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         cycle_cnt();
     }
 }
@@ -920,16 +894,16 @@ void mode5(void)
 void mode6(void)
 {
     Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);
-    if (_seg_rt->counter_mode_step <= _seg_len / 2)
-    {
+    if (_seg_rt->counter_mode_step <= _seg_len / 2) {
         //反向跑马
-        WS2812FX_setPixelColor(_seg_len / 2 - _seg_rt->counter_mode_step, WHITE);
-        WS2812FX_setPixelColor(_seg_len / 2 - 1 + _seg_rt->counter_mode_step, WHITE);
+        WS2812FX_setPixelColor(_seg_len / 2 - _seg_rt->counter_mode_step,
+                               WHITE);
+        WS2812FX_setPixelColor(_seg_len / 2 - 1 + _seg_rt->counter_mode_step,
+                               WHITE);
     }
     _seg_rt->counter_mode_step += 1;
     _seg_rt->counter_mode_step %= _seg_len / 2 + 1;
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         cycle_cnt();
     }
 }
@@ -940,8 +914,6 @@ void mode7(void)
     if (_seg_rt->counter_mode_step < _seg_len - 4) //正向跑马
     {
         WS2812FX_setPixelColor(_seg_rt->counter_mode_step, WHITE);
-
-
     }
     if (_seg_rt->counter_mode_step > 1) //清除第3个点
     {
@@ -950,23 +922,18 @@ void mode7(void)
     // if(step2_flag==0) //尾巴闪烁一次，流水下一个点
     _seg_rt->counter_mode_step += 1;
     _seg_rt->counter_mode_step %= _seg_len * 2;
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);
         cycle_cnt();
     }
 
-    if (_seg_rt->counter_mode_step >= _seg_len - 4)
-    {
-        if (step2_flag)
-        {
+    if (_seg_rt->counter_mode_step >= _seg_len - 4) {
+        if (step2_flag) {
             WS2812FX_setPixelColor(8, WHITE);
             WS2812FX_setPixelColor(10, WHITE);
             WS2812FX_setPixelColor(9, BLACK);
             WS2812FX_setPixelColor(11, BLACK);
-        }
-        else
-        {
+        } else {
             WS2812FX_setPixelColor(8, BLACK);
             WS2812FX_setPixelColor(10, BLACK);
             WS2812FX_setPixelColor(9, WHITE);
@@ -982,62 +949,47 @@ void mode8(void)
     music_dly = 10;
     if (_seg_rt->aux_param == 0) //全亮-》灭4颗
     {
-        if (_seg_rt->counter_mode_step > 2)
-        {
+        if (_seg_rt->counter_mode_step > 2) {
             WS2812FX_setPixelColor(_seg_rt->counter_mode_step, BLACK);
-            WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step, BLACK);
+            WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step,
+                                   BLACK);
 
             _seg_rt->counter_mode_step--;
-        }
-        else
-        {
+        } else {
             _seg_rt->aux_param = 1;
         }
-    }
-    else if (_seg_rt->aux_param == 1)
-    {
-        if (_seg_rt->counter_mode_step < _seg_len / 2 - 1)
-        {
+    } else if (_seg_rt->aux_param == 1) {
+        if (_seg_rt->counter_mode_step < _seg_len / 2 - 1) {
 
             WS2812FX_setPixelColor(_seg_rt->counter_mode_step, WHITE);
-            WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step, WHITE);
+            WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step,
+                                   WHITE);
 
             _seg_rt->counter_mode_step++;
-        }
-        else
-        {
+        } else {
             _seg_rt->aux_param = 2;
         }
-    }
-    else if (_seg_rt->aux_param == 2)
-    {
-        if (_seg_rt->counter_mode_step > 0)
-        {
+    } else if (_seg_rt->aux_param == 2) {
+        if (_seg_rt->counter_mode_step > 0) {
             WS2812FX_setPixelColor(_seg_rt->counter_mode_step, BLACK);
-            WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step, BLACK);
+            WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step,
+                                   BLACK);
 
             _seg_rt->counter_mode_step--;
-        }
-        else
-        {
+        } else {
             _seg_rt->aux_param = 3;
         }
-    }
-    else if (_seg_rt->aux_param == 3)
-    {
-        if (_seg_rt->counter_mode_step < _seg_len / 2)
-        {
+    } else if (_seg_rt->aux_param == 3) {
+        if (_seg_rt->counter_mode_step < _seg_len / 2) {
             WS2812FX_setPixelColor(_seg_rt->counter_mode_step, WHITE);
-            WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step, WHITE);
+            WS2812FX_setPixelColor(_seg_len - 1 - _seg_rt->counter_mode_step,
+                                   WHITE);
 
             _seg_rt->counter_mode_step++;
-        }
-        else
-        {
+        } else {
             _seg_rt->aux_param = 0;
 
             cycle_cnt();
-
         }
     }
 }
@@ -1049,156 +1001,129 @@ void mode9(void)
     uint8_t size = 1 << SIZE_OPTION;
 
     Adafruit_NeoPixel_fill(BLACK, _seg->start + _seg_rt->aux_param3, 1);
-    _seg_rt->aux_param3 = WS2812FX_random16_lim(_seg_len - 1); // aux_param3 stores the random led index
+    _seg_rt->aux_param3 = WS2812FX_random16_lim(
+        _seg_len - 1); // aux_param3 stores the random led index
     Adafruit_NeoPixel_fill(WHITE, _seg->start + _seg_rt->aux_param3, 1);
-    _seg_rt->aux_param3 = WS2812FX_random16_lim(_seg_len - 1); // aux_param3 stores the random led index
+    _seg_rt->aux_param3 = WS2812FX_random16_lim(
+        _seg_len - 1); // aux_param3 stores the random led index
     Adafruit_NeoPixel_fill(WHITE, _seg->start + _seg_rt->aux_param3, 1);
-    _seg_rt->aux_param3 = WS2812FX_random16_lim(_seg_len - 1); // aux_param3 stores the random led index
+    _seg_rt->aux_param3 = WS2812FX_random16_lim(
+        _seg_len - 1); // aux_param3 stores the random led index
     Adafruit_NeoPixel_fill(WHITE, _seg->start + _seg_rt->aux_param3, 1);
 
     _seg_rt->counter_mode_step++;
     if (_seg_rt->counter_mode_step > 100)
         cycle_cnt();
-
 }
-
 
 // 各种效果的大集合
 uint16_t music_1(void)
 {
     music_dly = 30;
-    if (music_step == 0)//倒序2个灯逐点流水
+    if (music_step == 0) //倒序2个灯逐点流水
     {
         mode1();
-    }
-    else if (music_step == 1)//顺序2个点一组，一共2组，第一组从0开始，第二组从一半开始
+    } else if (music_step ==
+               1) //顺序2个点一组，一共2组，第一组从0开始，第二组从一半开始
     {
         mode3();
-    }
-    else if (music_step == 2)//倒序2个点一组，一共2组，第一组从0开始，第二组从一半开始
+    } else if (music_step ==
+               2) //倒序2个点一组，一共2组，第一组从0开始，第二组从一半开始
     {
         mode4();
-    }
-    else if (music_step == 3)  //两边向中间走,逐点
+    } else if (music_step == 3) //两边向中间走,逐点
     {
         mode5();
-    }
-    else if (music_step == 4) //2点中间向两边走，逐点
+    } else if (music_step == 4) //2点中间向两边走，逐点
     {
         mode6();
-    }
-    else if (music_step == 5)//顺序2个点一组，一共2组，第一组从0开始，第二组从一半开始
+    } else if (music_step ==
+               5) //顺序2个点一组，一共2组，第一组从0开始，第二组从一半开始
     {
         mode3();
-    }
-    else if (music_step == 6)//倒序2个点一组，一共2组，第一组从0开始，第二组从一半开始
+    } else if (music_step ==
+               6) //倒序2个点一组，一共2组，第一组从0开始，第二组从一半开始
     {
         mode4();
     }
     if (music_step == 7) //正向流水
     {
 
-        if (_seg_rt->counter_mode_step < _seg_len)
-        {
+        if (_seg_rt->counter_mode_step < _seg_len) {
             WS2812FX_setPixelColor(_seg_rt->counter_mode_step, WHITE);
-        }
-        else
-        {
-            WS2812FX_setPixelColor(_seg_rt->counter_mode_step - _seg_len, BLACK);
+        } else {
+            WS2812FX_setPixelColor(_seg_rt->counter_mode_step - _seg_len,
+                                   BLACK);
         }
         _seg_rt->counter_mode_step++;
         _seg_rt->counter_mode_step %= _seg_len * 2;
-        if (_seg_rt->counter_mode_step == 0)
-        {
+        if (_seg_rt->counter_mode_step == 0) {
             cycle_cnt();
         }
-    }
-    else if (music_step == 8)//反向流水
+    } else if (music_step == 8) //反向流水
     {
 
-        if (_seg_rt->counter_mode_step < _seg_len)
-        {
-            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, WHITE);
-        }
-        else
-        {
-            WS2812FX_setPixelColor(2 * _seg_len - _seg_rt->counter_mode_step - 1, BLACK);
+        if (_seg_rt->counter_mode_step < _seg_len) {
+            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                                   WHITE);
+        } else {
+            WS2812FX_setPixelColor(
+                2 * _seg_len - _seg_rt->counter_mode_step - 1, BLACK);
         }
         _seg_rt->counter_mode_step++;
         _seg_rt->counter_mode_step %= _seg_len * 2;
-        if (_seg_rt->counter_mode_step == 0)
-        {
+        if (_seg_rt->counter_mode_step == 0) {
             cycle_cnt();
         }
-    }
-    else if (music_step == 9)//倒序2个灯逐点流水
+    } else if (music_step == 9) //倒序2个灯逐点流水
     {
         mode1();
-    }
-    else if (music_step == 10)//顺序2个灯逐点流水
+    } else if (music_step == 10) //顺序2个灯逐点流水
     {
         mode2();
-    }
-    else if (music_step == 11)
-    {
+    } else if (music_step == 11) {
         mode7();
-    }
-    else if (music_step == 12)  //两边向中间走,逐点
+    } else if (music_step == 12) //两边向中间走,逐点
     {
         mode5();
-    }
-    else if (music_step == 13) //2点中间向两边走，逐点
+    } else if (music_step == 13) //2点中间向两边走，逐点
     {
         mode6();
-    }
-    else if (music_step == 14) // 假频谱
+    } else if (music_step == 14) // 假频谱
     {
         mode8();
-    }
-    else if (music_step == 15) // 随机闪烁
+    } else if (music_step == 15) // 随机闪烁
     {
         mode9();
-        if (change_mode)
-        {
+        if (change_mode) {
             change_mode = 0;
             Adafruit_NeoPixel_fill(WHITE, _seg->start, _seg_len);
             _seg_rt->counter_mode_step = _seg_len / 2;
             _seg_rt->aux_param = 0;
         }
-    }
-    else if (music_step == 16) // 假频谱
+    } else if (music_step == 16) // 假频谱
     {
         mode8();
-    }
-    else if (music_step == 17) // 随机闪烁
+    } else if (music_step == 17) // 随机闪烁
     {
         mode9();
-    }
-    else if (music_step == 18) //顺序2个灯逐点流水
+    } else if (music_step == 18) //顺序2个灯逐点流水
     {
         mode2();
     }
 
-
-
-
-    if (get_sound_result())
-    {
+    if (get_sound_result()) {
         music_trg = 0;
-    }
-    else
-    {
+    } else {
         if (music_trg < 100)
             music_trg++;
-        else
-        {
+        else {
             music_dly = 5000;
             music_step = 0;
         }
     }
     return music_dly;
 }
-
 
 #pragma endregion
 //---------------------------------------------------流星效果II END ---------------------------------
@@ -1208,18 +1133,14 @@ uint16_t music_1(void)
 // 开机效果
 uint16_t power_on_effect(void)
 {
-    if (_seg_rt->counter_mode_step)
-    {
+    if (_seg_rt->counter_mode_step) {
         Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);
-    }
-    else
-    {
+    } else {
         Adafruit_NeoPixel_fill(GREEN, _seg->start, _seg_len);
     }
     _seg_rt->counter_mode_step = !_seg_rt->counter_mode_step;
     _seg_rt->aux_param++;
-    if (_seg_rt->aux_param > 6)
-    {
+    if (_seg_rt->aux_param > 6) {
         extern void read_flash_device_status_init(void);
         read_flash_device_status_init();
         set_fc_effect();
@@ -1229,18 +1150,14 @@ uint16_t power_on_effect(void)
 
 uint16_t power_off_effect(void)
 {
-    if (_seg_rt->counter_mode_step)
-    {
+    if (_seg_rt->counter_mode_step) {
         Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);
-    }
-    else
-    {
+    } else {
         Adafruit_NeoPixel_fill(RED, _seg->start, _seg_len);
     }
     _seg_rt->counter_mode_step = !_seg_rt->counter_mode_step;
     _seg_rt->aux_param++;
-    if (_seg_rt->aux_param > 4)
-    {
+    if (_seg_rt->aux_param > 4) {
         // 硬件关机
         gpio_direction_output(IO_PORTA_08, 0);
     }
@@ -1250,12 +1167,9 @@ uint16_t power_off_effect(void)
 // 解绑效果
 uint16_t unbind_effect(void)
 {
-    if (_seg_rt->counter_mode_step)
-    {
+    if (_seg_rt->counter_mode_step) {
         Adafruit_NeoPixel_fill(WHITE, _seg->start, _seg_len);
-    }
-    else
-    {
+    } else {
         Adafruit_NeoPixel_fill(GRAY, _seg->start, _seg_len);
     }
     _seg_rt->counter_mode_step = !_seg_rt->counter_mode_step;
@@ -1266,18 +1180,14 @@ uint16_t unbind_effect(void)
 // 提示效果,白光闪烁
 uint16_t white_tips(void)
 {
-    if (_seg_rt->counter_mode_step)
-    {
+    if (_seg_rt->counter_mode_step) {
         Adafruit_NeoPixel_fill(GRAY, _seg->start, _seg_len);
-    }
-    else
-    {
+    } else {
         Adafruit_NeoPixel_fill(WHITE, _seg->start, _seg_len);
     }
     _seg_rt->counter_mode_step = !_seg_rt->counter_mode_step;
     _seg_rt->aux_param++;
-    if (_seg_rt->aux_param > 3)
-    {
+    if (_seg_rt->aux_param > 3) {
         extern void read_flash_device_status_init(void);
         read_flash_device_status_init();
         set_fc_effect();
@@ -1285,11 +1195,8 @@ uint16_t white_tips(void)
     return (100);
 }
 
-
 #pragma endregion
 //-----------------------------------------------------涂鸦的开关机，解绑效果  END------------------------------
-
-
 
 //-----------------------------------------------------------效果实现 -----------------------------------
 
@@ -1297,8 +1204,7 @@ uint16_t white_tips(void)
 uint16_t WS2812FX_adj_rgb_sequence(void)
 {
     u32 c = BLUE;
-    switch (_seg_rt->counter_mode_step)
-    {
+    switch (_seg_rt->counter_mode_step) {
     case 0:
         c = RED;
         break;
@@ -1312,13 +1218,11 @@ uint16_t WS2812FX_adj_rgb_sequence(void)
 
     Adafruit_NeoPixel_fill(c, _seg->start, _seg_len);
 
-    if (_seg_rt->counter_mode_step < 3)
-    {
+    if (_seg_rt->counter_mode_step < 3) {
         _seg_rt->counter_mode_step++;
     }
     return 1000;
 }
-
 
 /*
  * Color wipe function，多种颜色流水效果
@@ -1332,8 +1236,7 @@ uint16_t WS2812FX_multiColor_wipe(uint8_t is_reverse, uint8_t rev)
 {
     static uint32_t color[2];
 
-    if (_seg_rt->counter_mode_step == _seg_len)
-    {
+    if (_seg_rt->counter_mode_step == _seg_len) {
         // 一个循环后更换颜色
         color[_seg_rt->aux_param] = _seg->colors[_seg_rt->aux_param3];
         _seg_rt->aux_param++;
@@ -1341,8 +1244,7 @@ uint16_t WS2812FX_multiColor_wipe(uint8_t is_reverse, uint8_t rev)
         _seg_rt->aux_param3++;
         _seg_rt->aux_param3 %= _seg->c_n;
     }
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
 
         color[_seg_rt->aux_param] = _seg->colors[_seg_rt->aux_param3];
         _seg_rt->aux_param++;
@@ -1356,26 +1258,23 @@ uint16_t WS2812FX_multiColor_wipe(uint8_t is_reverse, uint8_t rev)
         uint32_t led_offset = _seg_rt->counter_mode_step;
         if (is_reverse) {
             WS2812FX_setPixelColor(_seg->stop - led_offset, color[0]);
-        }
-        else {
+        } else {
             WS2812FX_setPixelColor(_seg->start + led_offset, color[0]);
         }
-    }
-    else {
+    } else {
         uint32_t led_offset = _seg_rt->counter_mode_step - _seg_len;
         if ((is_reverse && !rev) || (!is_reverse && rev)) {
             WS2812FX_setPixelColor(_seg->stop - led_offset, color[1]);
-        }
-        else {
+        } else {
             WS2812FX_setPixelColor(_seg->start + led_offset, color[1]);
         }
     }
 
-    _seg_rt->counter_mode_step = (_seg_rt->counter_mode_step + 1) % (_seg_len * 2);
+    _seg_rt->counter_mode_step =
+        (_seg_rt->counter_mode_step + 1) % (_seg_len * 2);
 
     return (_seg->speed);
 }
-
 
 // 多种颜色流水效果
 // 正向流水，颜色同向
@@ -1383,7 +1282,6 @@ uint16_t WS2812FX_mode_multi_forward_same(void)
 {
     return WS2812FX_multiColor_wipe(0, 0);
 }
-
 
 // 多种颜色流水效果
 // 反向流水，颜色同向
@@ -1396,22 +1294,19 @@ uint16_t WS2812FX_mode_multi_back_same(void)
 在每一个LED颜色随机。并且淡出，淡入
 Cycle a rainbow on each LED
  */
-uint16_t WS2812FX_mode_fade_each_led(void) {
+uint16_t WS2812FX_mode_fade_each_led(void)
+{
     if (_seg_rt->counter_mode_step == 0) {
         _seg_rt->counter_mode_step = 0x0f;
         for (uint16_t i = _seg->start; i <= _seg->stop; i++) {
             WS2812FX_setPixelColor(i, WS2812FX_color_wheel(WS2812FX_random8()));
-
         }
-    }
-    else {
+    } else {
         WS2812FX_fade_out();
     }
     _seg_rt->counter_mode_step++;
     return (_seg->speed / 8);
 }
-
-
 
 /*
 功能：颜色块跳变效果，多个颜色块组成背景,以块为单位步进做流水,
@@ -1430,21 +1325,18 @@ uint16_t WS2812FX_mode_single_block_scan(void)
     // size = 5; //debug用，最后删除
     // _seg->c_n = 3;//debug用，最后删除
     _seg_rt->counter_mode_step = 0;
-    while (_seg_rt->counter_mode_step < _seg->stop)
-    {
-        for (j = 0; j < size; j++)
-        {
+    while (_seg_rt->counter_mode_step < _seg->stop) {
+        for (j = 0; j < size; j++) {
             if (IS_REVERSE == 0) //反向流水
             {
-                WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, _seg->colors[_seg_rt->aux_param]);
-            }
-            else
-            {
-                WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, _seg->colors[_seg_rt->aux_param]);
+                WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step,
+                                       _seg->colors[_seg_rt->aux_param]);
+            } else {
+                WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                                       _seg->colors[_seg_rt->aux_param]);
             }
             _seg_rt->counter_mode_step++;
-            if (_seg_rt->counter_mode_step > _seg->stop)
-            {
+            if (_seg_rt->counter_mode_step > _seg->stop) {
                 break;
             }
         }
@@ -1454,8 +1346,7 @@ uint16_t WS2812FX_mode_single_block_scan(void)
 
     c = _seg->colors[0];
     // 重新开始，对颜色转盘
-    for (j = 1; j < _seg->c_n; j++)
-    {
+    for (j = 1; j < _seg->c_n; j++) {
         // 把后面的颜色提前
         _seg->colors[j - 1] = _seg->colors[j];
     }
@@ -1498,70 +1389,50 @@ uint16_t WS2812FX_mode_multi_block_scan(void)
         return 0;
 
     /* 构建背景颜色 */
-    if (_seg_rt->counter_mode_step == 0)
-    {
-        while (_seg_rt->counter_mode_step <= _seg->stop)
-        {
-            for (j = 0; (j < size) && (_seg_rt->counter_mode_step <= _seg->stop); j++)
-            {
-                WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, _seg->colors[_seg_rt->aux_param]);
+    if (_seg_rt->counter_mode_step == 0) {
+        while (_seg_rt->counter_mode_step <= _seg->stop) {
+            for (j = 0;
+                 (j < size) && (_seg_rt->counter_mode_step <= _seg->stop);
+                 j++) {
+                WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step,
+                                       _seg->colors[_seg_rt->aux_param]);
                 _seg_rt->counter_mode_step++;
             }
             _seg_rt->aux_param++;
             _seg_rt->aux_param %= _seg->c_n;
             // _seg_rt->aux_param %= MAX_NUM_COLORS;
         }
-    }
-    else
-    {
+    } else {
         if (IS_REVERSE) //反向流水
         {
             /* 获取原始颜色，没有进行亮度调整的颜色 */
 
             uint32_t c = Adafruit_NeoPixel_getOriginPixelColor(_seg->start);
             /* 颜色平移一个像素,把后面像素复制到前面 */
-            WS2812FX_copyPixels(_seg->start, _seg->start + 1, _seg->stop - _seg->start);
+            WS2812FX_copyPixels(_seg->start, _seg->start + 1,
+                                _seg->stop - _seg->start);
 
             /* 把第一个颜色，补到最后一个位置 */
             Adafruit_NeoPixel_setPixelColor_raw(_seg->stop, c);
-        }
-        else
-        {
+        } else {
             uint32_t c = Adafruit_NeoPixel_getOriginPixelColor(_seg->stop);
 
-            for (i = 0;i < _seg->stop - _seg->start;i++)
-            {
+            for (i = 0; i < _seg->stop - _seg->start; i++) {
                 WS2812FX_copyPixels(_seg->stop - i, _seg->stop - 1 - i, 1);
             }
 
             Adafruit_NeoPixel_setPixelColor_raw(_seg->start, c);
-
         }
-
     }
 
     return _seg->speed;
 }
 
-
-uint8_t music_s_m;//0:随机颜色；1：白色，2：蓝色
+uint8_t music_s_m; //0:随机颜色；1：白色，2：蓝色
 void set_music_s_m(u8 m)
 {
     music_s_m = m;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // 多段颜色，同时在做渐变效果，每段效果把_seg->colors轮转
 // SIZE_OPTION：像素点大小
@@ -1579,43 +1450,35 @@ uint16_t WS2812FX_mode_mutil_fade(void)
     static uint32_t c1[MAX_NUM_COLORS];
     int lum = _seg_rt->counter_mode_step;
 
-
     if (size > (_seg->stop - _seg->start) && size == 0)
         return 0;
 
-    if (lum > 255) lum = 511 - lum; // lum = 0 -> 255 -> 0
+    if (lum > 255)
+        lum = 511 - lum; // lum = 0 -> 255 -> 0
     _seg_rt->aux_param = 0;
     _seg_rt->aux_param2 = 0;
 
-    if (_seg_rt->aux_param3 == 0)
-    {
+    if (_seg_rt->aux_param3 == 0) {
         _seg_rt->aux_param3 = 1;
         memcpy(c1, _seg->colors, MAX_NUM_COLORS * 4);
-
     }
 
-    while (_seg_rt->aux_param2 < _seg->stop)
-    {
+    while (_seg_rt->aux_param2 < _seg->stop) {
         color0 = _seg->colors[cnt0];
         cnt0++;
         cnt0 %= _seg->c_n;
         color1 = c1[cnt1];
         cnt1++;
         cnt1 %= _seg->c_n;
-        if (cnt1 == 0)
-        {
+        if (cnt1 == 0) {
             ws2811fx_set_cycle = 1;
             SET_CYCLE;
-
         }
         color = WS2812FX_color_blend(color1, color0, lum);
-        for (j = 0; j < size; j++)
-        {
-            WS2812FX_setPixelColor(_seg->start + _seg_rt->aux_param2, \
-                color);
+        for (j = 0; j < size; j++) {
+            WS2812FX_setPixelColor(_seg->start + _seg_rt->aux_param2, color);
             _seg_rt->aux_param2++;
-            if (_seg_rt->aux_param2 > _seg->stop)
-            {
+            if (_seg_rt->aux_param2 > _seg->stop) {
                 break;
             }
         }
@@ -1627,12 +1490,10 @@ uint16_t WS2812FX_mode_mutil_fade(void)
     if (_seg_rt->counter_mode_step > 511) {
         _seg_rt->counter_mode_step = 0;
         // color0的颜色池左移1
-
     }
 
     // 此时颜色停留在color1,把color0颜色变换,color0向左转盘
-    if (_seg_rt->counter_mode_step == 0)
-    {
+    if (_seg_rt->counter_mode_step == 0) {
         uint32_t c_tmp;
         c_tmp = _seg->colors[0];
 
@@ -1642,20 +1503,16 @@ uint16_t WS2812FX_mode_mutil_fade(void)
     }
 
     // 此时颜色停留再color0
-    if (_seg_rt->counter_mode_step == 256)
-    {
+    if (_seg_rt->counter_mode_step == 256) {
         // color1的颜色池左移1
         uint32_t c_tmp;
         c_tmp = c1[0];
         memmove(&c1[0], &c1[1], (_seg->c_n - 1) * 4);
 
-
         c1[_seg->c_n - 1] = c_tmp;
     }
     return (_seg->speed / 32);
 }
-
-
 
 // 多段颜色构成背景色，做呼吸效果
 // SIZE_OPTION：像素点大小
@@ -1676,8 +1533,7 @@ uint16_t WS2812FX_mode_mutil_breath(void)
     uint16_t lum = _seg_rt->aux_param3;
     uint32_t color;
 
-    if (lum > 255)
-    {
+    if (lum > 255) {
         lum = 511 - lum;
     }
 
@@ -1687,12 +1543,13 @@ uint16_t WS2812FX_mode_mutil_breath(void)
 
     _seg_rt->counter_mode_step = 0;
     _seg_rt->aux_param = 0;
-    while (_seg_rt->counter_mode_step <= _seg->stop)
-    {
-        for (j = 0; (j < size) && (_seg_rt->counter_mode_step <= _seg->stop); j++)
-        {
-            color = WS2812FX_color_blend(_seg->colors[_seg_rt->aux_param], 0, lum);
-            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, color);
+    while (_seg_rt->counter_mode_step <= _seg->stop) {
+        for (j = 0; (j < size) && (_seg_rt->counter_mode_step <= _seg->stop);
+             j++) {
+            color =
+                WS2812FX_color_blend(_seg->colors[_seg_rt->aux_param], 0, lum);
+            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step,
+                                   color);
             _seg_rt->counter_mode_step++;
         }
         _seg_rt->aux_param++;
@@ -1701,10 +1558,9 @@ uint16_t WS2812FX_mode_mutil_breath(void)
 
     _seg_rt->aux_param3 += 4;
     _seg_rt->aux_param3 %= 511;
-  
+
     return _seg->speed / 4;
 }
-
 
 // 多段颜色构成背景色，做闪烁
 // SIZE_OPTION：像素点大小
@@ -1725,35 +1581,26 @@ uint16_t WS2812FX_mode_mutil_twihkle(void)
 
     _seg_rt->counter_mode_step = 0;
     _seg_rt->aux_param = 0;
-    if (_seg_rt->aux_param3)
-    {
-        while (_seg_rt->counter_mode_step <= _seg->stop)
-        {
-            for (j = 0; (j < size) && (_seg_rt->counter_mode_step <= _seg->stop); j++)
-            {
-                WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, _seg->colors[_seg_rt->aux_param]);
+    if (_seg_rt->aux_param3) {
+        while (_seg_rt->counter_mode_step <= _seg->stop) {
+            for (j = 0;
+                 (j < size) && (_seg_rt->counter_mode_step <= _seg->stop);
+                 j++) {
+                WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step,
+                                       _seg->colors[_seg_rt->aux_param]);
                 _seg_rt->counter_mode_step++;
             }
             _seg_rt->aux_param++;
             _seg_rt->aux_param %= _seg->c_n;
         }
-    }
-    else
-    {
+    } else {
         Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);
-
     }
 
     _seg_rt->aux_param3 = !_seg_rt->aux_param3;
 
-
     return _seg->speed;
 }
-
-
-
-
-
 
 /* -------------------------------ws2812fx自带效果----------------------------------- */
 
@@ -1817,37 +1664,40 @@ uint16_t WS2812FX_mode_mutil_twihkle(void)
 /*
  * Random flickering.
  */
-uint16_t WS2812FX_mode_fire_flicker(void) {
+uint16_t WS2812FX_mode_fire_flicker(void)
+{
     return WS2812FX_fire_flicker(3);
 }
 
 /*
 * Random flickering, less intensity.
 */
-uint16_t WS2812FX_mode_fire_flicker_soft(void) {
+uint16_t WS2812FX_mode_fire_flicker_soft(void)
+{
     return WS2812FX_fire_flicker(6);
 }
 
 /*
 * Random flickering, more intensity.
 */
-uint16_t WS2812FX_mode_fire_flicker_intense(void) {
+uint16_t WS2812FX_mode_fire_flicker_intense(void)
+{
     return WS2812FX_fire_flicker(1);
 }
-
 
 /*
  * Random colored firework sparks.
  */
-uint16_t WS2812FX_mode_fireworks_random(void) {
+uint16_t WS2812FX_mode_fireworks_random(void)
+{
     return WS2812FX_fireworks(WS2812FX_color_wheel(WS2812FX_random8()));
 }
-
 
 /*
  * Firework sparks.
  */
-uint16_t WS2812FX_mode_fireworks(void) {
+uint16_t WS2812FX_mode_fireworks(void)
+{
     uint32_t color = BLACK;
     do { // randomly choose a non-BLACK color from the colors array
         color = _seg->colors[WS2812FX_random8_lim(MAX_NUM_COLORS)];
@@ -1858,43 +1708,45 @@ uint16_t WS2812FX_mode_fireworks(void) {
 /*
  * Firing comets from one end.
  */
-uint16_t WS2812FX_mode_comet(void) {
+uint16_t WS2812FX_mode_comet(void)
+{
     WS2812FX_fade_out();
 
     if (IS_REVERSE) {
-        WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, _seg->colors[0]);
-    }
-    else {
-        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, _seg->colors[0]);
+        WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                               _seg->colors[0]);
+    } else {
+        WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step,
+                               _seg->colors[0]);
     }
 
     _seg_rt->counter_mode_step = (_seg_rt->counter_mode_step + 1) % _seg_len;
-    if (_seg_rt->counter_mode_step == 0) SET_CYCLE;
+    if (_seg_rt->counter_mode_step == 0)
+        SET_CYCLE;
 
     return (_seg->speed / _seg_len);
 }
 
-
 /*
  * K.I.T.T.
  */
-uint16_t WS2812FX_mode_larson_scanner(void) {
+uint16_t WS2812FX_mode_larson_scanner(void)
+{
     WS2812FX_fade_out();
 
     if (_seg_rt->counter_mode_step < _seg_len) {
         if (IS_REVERSE) {
-            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step, _seg->colors[0]);
+            WS2812FX_setPixelColor(_seg->stop - _seg_rt->counter_mode_step,
+                                   _seg->colors[0]);
+        } else {
+            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step,
+                                   _seg->colors[0]);
         }
-        else {
-            WS2812FX_setPixelColor(_seg->start + _seg_rt->counter_mode_step, _seg->colors[0]);
-        }
-    }
-    else {
+    } else {
         uint16_t index = (_seg_len * 2) - _seg_rt->counter_mode_step - 2;
         if (IS_REVERSE) {
             WS2812FX_setPixelColor(_seg->stop - index, _seg->colors[0]);
-        }
-        else {
+        } else {
             WS2812FX_setPixelColor(_seg->start + index, _seg->colors[0]);
         }
     }
@@ -1908,14 +1760,15 @@ uint16_t WS2812FX_mode_larson_scanner(void) {
     return (_seg->speed / (_seg_len * 2));
 }
 
-
 /*
  * Random colored pixels running.
  */
-uint16_t WS2812FX_mode_running_random(void) {
+uint16_t WS2812FX_mode_running_random(void)
+{
     uint8_t size = 2 << SIZE_OPTION;
     if ((_seg_rt->counter_mode_step) % size == 0) {
-        _seg_rt->aux_param = WS2812FX_get_random_wheel_index(_seg_rt->aux_param);
+        _seg_rt->aux_param =
+            WS2812FX_get_random_wheel_index(_seg_rt->aux_param);
     }
 
     uint32_t color = WS2812FX_color_wheel(_seg_rt->aux_param);
@@ -1923,98 +1776,106 @@ uint16_t WS2812FX_mode_running_random(void) {
     return WS2812FX_running(color, color);
 }
 
-
 /*
  * Alternating color/white pixels running.
  */
-uint16_t WS2812FX_mode_running_color(void) {
+uint16_t WS2812FX_mode_running_color(void)
+{
     return WS2812FX_running(_seg->colors[0], _seg->colors[1]);
 }
-
 
 /*
  * Alternating red/blue pixels running.
  */
-uint16_t WS2812FX_mode_running_red_blue(void) {
+uint16_t WS2812FX_mode_running_red_blue(void)
+{
     return WS2812FX_running(RED, BLUE);
 }
-
 
 /*
  * Alternating red/green pixels running.
  */
-uint16_t WS2812FX_mode_merry_christmas(void) {
+uint16_t WS2812FX_mode_merry_christmas(void)
+{
     return WS2812FX_running(RED, GREEN);
 }
 
 /*
  * Alternating orange/purple pixels running.
  */
-uint16_t WS2812FX_mode_halloween(void) {
+uint16_t WS2812FX_mode_halloween(void)
+{
     return WS2812FX_running(PURPLE, ORANGE);
 }
 
 /*
  * White flashes running on _color.
  */
-uint16_t WS2812FX_mode_chase_flash(void) {
+uint16_t WS2812FX_mode_chase_flash(void)
+{
     return WS2812FX_chase_flash(_seg->colors[0], WHITE);
 }
-
 
 /*
  * White flashes running, followed by random color.
  */
-uint16_t WS2812FX_mode_chase_flash_random(void) {
-    return WS2812FX_chase_flash(WS2812FX_color_wheel(_seg_rt->aux_param), WHITE);
+uint16_t WS2812FX_mode_chase_flash_random(void)
+{
+    return WS2812FX_chase_flash(WS2812FX_color_wheel(_seg_rt->aux_param),
+                                WHITE);
 }
-
-
 
 /*
  * White running on rainbow.
  白色点流水效果，背景为彩虹色，才会说也跟随白色点变换花样
  */
-uint16_t WS2812FX_mode_chase_rainbow(void) {
+uint16_t WS2812FX_mode_chase_rainbow(void)
+{
     uint8_t color_sep = 256 / _seg_len;
     uint8_t color_index = _seg_rt->counter_mode_call & 0xFF;
-    uint32_t color = WS2812FX_color_wheel(((_seg_rt->counter_mode_step * color_sep) + color_index) & 0xFF);
+    uint32_t color = WS2812FX_color_wheel(
+        ((_seg_rt->counter_mode_step * color_sep) + color_index) & 0xFF);
 
     return WS2812FX_chase(color, WHITE, WHITE);
 }
 
-
 /*
  * Black running on rainbow.
  */
-uint16_t WS2812FX_mode_chase_blackout_rainbow(void) {
+uint16_t WS2812FX_mode_chase_blackout_rainbow(void)
+{
     uint8_t color_sep = 256 / _seg_len;
     uint8_t color_index = _seg_rt->counter_mode_call & 0xFF;
-    uint32_t color = WS2812FX_color_wheel(((_seg_rt->counter_mode_step * color_sep) + color_index) & 0xFF);
+    uint32_t color = WS2812FX_color_wheel(
+        ((_seg_rt->counter_mode_step * color_sep) + color_index) & 0xFF);
 
     return WS2812FX_chase(color, BLACK, BLACK);
 }
 
-
 /*
  * White running followed by random color.
  */
-uint16_t WS2812FX_mode_chase_random(void) {
+uint16_t WS2812FX_mode_chase_random(void)
+{
     if (_seg_rt->counter_mode_step == 0) {
-        _seg_rt->aux_param = WS2812FX_get_random_wheel_index(_seg_rt->aux_param);
+        _seg_rt->aux_param =
+            WS2812FX_get_random_wheel_index(_seg_rt->aux_param);
     }
-    return WS2812FX_chase(WS2812FX_color_wheel(_seg_rt->aux_param), WHITE, WHITE);
+    return WS2812FX_chase(WS2812FX_color_wheel(_seg_rt->aux_param), WHITE,
+                          WHITE);
 }
-
 
 /*
  * Rainbow running on white.
  */
-uint16_t WS2812FX_mode_chase_rainbow_white(void) {
+uint16_t WS2812FX_mode_chase_rainbow_white(void)
+{
     uint16_t n = _seg_rt->counter_mode_step;
     uint16_t m = (_seg_rt->counter_mode_step + 1) % _seg_len;
-    uint32_t color2 = WS2812FX_color_wheel(((n * 256 / _seg_len) + (_seg_rt->counter_mode_call & 0xFF)) & 0xFF);
-    uint32_t color3 = WS2812FX_color_wheel(((m * 256 / _seg_len) + (_seg_rt->counter_mode_call & 0xFF)) & 0xFF);
+    uint32_t color2 = WS2812FX_color_wheel(
+        ((n * 256 / _seg_len) + (_seg_rt->counter_mode_call & 0xFF)) & 0xFF);
+    uint32_t color3 = WS2812FX_color_wheel(
+        ((m * 256 / _seg_len) + (_seg_rt->counter_mode_call & 0xFF)) & 0xFF);
 
     return WS2812FX_chase(WHITE, color2, color3);
 }
@@ -2022,40 +1883,41 @@ uint16_t WS2812FX_mode_chase_rainbow_white(void) {
 /*
  * Bicolor chase mode
  */
-uint16_t WS2812FX_mode_bicolor_chase(void) {
+uint16_t WS2812FX_mode_bicolor_chase(void)
+{
     return WS2812FX_chase(_seg->colors[0], _seg->colors[1], _seg->colors[2]);
 }
-
 
 /*
  * White running on _color.
  */
-uint16_t WS2812FX_mode_chase_color(void) {
+uint16_t WS2812FX_mode_chase_color(void)
+{
     return WS2812FX_chase(_seg->colors[0], WHITE, WHITE);
 }
-
 
 /*
  * Black running on _color.
  */
-uint16_t WS2812FX_mode_chase_blackout(void) {
+uint16_t WS2812FX_mode_chase_blackout(void)
+{
     return WS2812FX_chase(_seg->colors[0], BLACK, BLACK);
 }
-
 
 /*
  * _color running on white.
  */
-uint16_t WS2812FX_mode_chase_white(void) {
+uint16_t WS2812FX_mode_chase_white(void)
+{
     return WS2812FX_chase(WHITE, _seg->colors[0], _seg->colors[0]);
 }
-
 
 /*
  * Strobe effect with different strobe count and pause, controlled by speed.
   颜色爆闪
  */
-uint16_t WS2812FX_mode_multi_strobe(void) {
+uint16_t WS2812FX_mode_multi_strobe(void)
+{
     Adafruit_NeoPixel_fill(_seg->colors[1], _seg->start, _seg_len);
 
     uint16_t delay = 200 + ((9 - (_seg->speed % 10)) * 100);
@@ -2064,14 +1926,14 @@ uint16_t WS2812FX_mode_multi_strobe(void) {
         if ((_seg_rt->counter_mode_step & 1) == 0) {
             Adafruit_NeoPixel_fill(_seg->colors[0], _seg->start, _seg_len);
             delay = 20;
-        }
-        else {
+        } else {
             delay = 50;
         }
     }
 
     _seg_rt->counter_mode_step = (_seg_rt->counter_mode_step + 1) % (count + 1);
-    if (_seg_rt->counter_mode_step == 0) SET_CYCLE;
+    if (_seg_rt->counter_mode_step == 0)
+        SET_CYCLE;
     return delay;
 }
 
@@ -2079,52 +1941,53 @@ uint16_t WS2812FX_mode_multi_strobe(void) {
  * Blinks one LED at a time.
  * Inspired by www.tweaking4all.com/hardware/arduino/arduino-led-strip-effects/
  */
-uint16_t WS2812FX_mode_sparkle(void) {
+uint16_t WS2812FX_mode_sparkle(void)
+{
     return WS2812FX_sparkle(_seg->colors[1], _seg->colors[0]);
 }
-
 
 /*
  * Lights all LEDs in the color. Flashes white pixels randomly.
  * Inspired by www.tweaking4all.com/hardware/arduino/arduino-led-strip-effects/
  */
-uint16_t WS2812FX_mode_flash_sparkle(void) {
+uint16_t WS2812FX_mode_flash_sparkle(void)
+{
     return WS2812FX_sparkle(_seg->colors[0], WHITE);
 }
-
 
 /*
  * Like flash sparkle. With more flash.
  * Inspired by www.tweaking4all.com/hardware/arduino/arduino-led-strip-effects/
  */
-uint16_t WS2812FX_mode_hyper_sparkle(void) {
+uint16_t WS2812FX_mode_hyper_sparkle(void)
+{
     Adafruit_NeoPixel_fill(_seg->colors[0], _seg->start, _seg_len);
 
     uint8_t size = 1 << SIZE_OPTION;
     for (uint8_t i = 0; i < 8; i++) {
-        Adafruit_NeoPixel_fill(WHITE, _seg->start + WS2812FX_random16_lim(_seg_len - size), size);
+        Adafruit_NeoPixel_fill(
+            WHITE, _seg->start + WS2812FX_random16_lim(_seg_len - size), size);
     }
 
     SET_CYCLE;
     return (_seg->speed / 32);
 }
 
-
 /*
  * Blink several LEDs on, fading out.
  */
-uint16_t WS2812FX_mode_twinkle_fade(void) {
+uint16_t WS2812FX_mode_twinkle_fade(void)
+{
     return WS2812FX_twinkle_fade(_seg->colors[0]);
 }
-
 
 /*
  * Blink several LEDs in random colors on, fading out.
  */
-uint16_t WS2812FX_mode_twinkle_fade_random(void) {
+uint16_t WS2812FX_mode_twinkle_fade_random(void)
+{
     return WS2812FX_twinkle_fade(WS2812FX_color_wheel(WS2812FX_random8()));
 }
-
 
 // 所有LED当前颜色淡出，弹出最终颜色为_seg->colors[1]
 uint16_t WS2812FX_mode_fade_single(void)
@@ -2138,7 +2001,8 @@ uint16_t WS2812FX_mode_fade_single(void)
  * Blink several LEDs on, reset, repeat.
  * Inspired by www.tweaking4all.com/hardware/arduino/arduino-led-strip-effects/
  */
-uint16_t WS2812FX_mode_twinkle(void) {
+uint16_t WS2812FX_mode_twinkle(void)
+{
     return WS2812FX_twinkle(_seg->colors[0], _seg->colors[1]);
 }
 
@@ -2146,82 +2010,90 @@ uint16_t WS2812FX_mode_twinkle(void) {
  * Blink several LEDs in random colors on, reset, repeat.
  * Inspired by www.tweaking4all.com/hardware/arduino/arduino-led-strip-effects/
  */
-uint16_t WS2812FX_mode_twinkle_random(void) {
-    return WS2812FX_twinkle(WS2812FX_color_wheel(WS2812FX_random8()), _seg->colors[1]);
+uint16_t WS2812FX_mode_twinkle_random(void)
+{
+    return WS2812FX_twinkle(WS2812FX_color_wheel(WS2812FX_random8()),
+                            _seg->colors[1]);
 }
-
 
 /*
  * Theatre-style crawling lights with rainbow effect.
  * Inspired by the Adafruit examples.
  */
-uint16_t WS2812FX_mode_theater_chase_rainbow(void) {
+uint16_t WS2812FX_mode_theater_chase_rainbow(void)
+{
     _seg_rt->counter_mode_step = (_seg_rt->counter_mode_step + 1) & 0xFF;
     uint32_t color = WS2812FX_color_wheel(_seg_rt->counter_mode_step);
     return WS2812FX_tricolor_chase(color, _seg->colors[1], _seg->colors[1]);
 }
 
-
 /*
  * Running lights effect with smooth sine transition.
  */
-uint16_t WS2812FX_mode_running_lights(void) {
+uint16_t WS2812FX_mode_running_lights(void)
+{
     uint8_t size = 1 << SIZE_OPTION;
     uint8_t sineIncr = max(1, (256 / _seg_len) * size);
     for (uint16_t i = 0; i < _seg_len; i++) {
-        int lum = (int)Adafruit_NeoPixel_sine8(((i + _seg_rt->counter_mode_step) * sineIncr));
-        uint32_t color = WS2812FX_color_blend(_seg->colors[0], _seg->colors[1], lum);
+        int lum = (int)Adafruit_NeoPixel_sine8(
+            ((i + _seg_rt->counter_mode_step) * sineIncr));
+        uint32_t color =
+            WS2812FX_color_blend(_seg->colors[0], _seg->colors[1], lum);
         if (IS_REVERSE) {
             WS2812FX_setPixelColor(_seg->start + i, color);
-        }
-        else {
+        } else {
             WS2812FX_setPixelColor(_seg->stop - i, color);
         }
     }
     _seg_rt->counter_mode_step = (_seg_rt->counter_mode_step + 1) % 256;
-    if (_seg_rt->counter_mode_step == 0) SET_CYCLE;
+    if (_seg_rt->counter_mode_step == 0)
+        SET_CYCLE;
     return (_seg->speed / _seg_len);
 }
-
-
 
 /*
  * Tricolor chase mode
  */
-uint16_t WS2812FX_mode_tricolor_chase(void) {
-    return WS2812FX_tricolor_chase(_seg->colors[0], _seg->colors[1], _seg->colors[2]);
+uint16_t WS2812FX_mode_tricolor_chase(void)
+{
+    return WS2812FX_tricolor_chase(_seg->colors[0], _seg->colors[1],
+                                   _seg->colors[2]);
 }
-
 
 /*
  * Alternating white/red/black pixels running.
  */
-uint16_t WS2812FX_mode_circus_combustus(void) {
+uint16_t WS2812FX_mode_circus_combustus(void)
+{
     return WS2812FX_tricolor_chase(RED, WHITE, BLACK);
 }
-
 
 /*
  * Theatre-style crawling lights.
  * Inspired by the Adafruit examples.
  */
-uint16_t WS2812FX_mode_theater_chase(void) {
-    return WS2812FX_tricolor_chase(_seg->colors[0], _seg->colors[1], _seg->colors[1]);
+uint16_t WS2812FX_mode_theater_chase(void)
+{
+    return WS2812FX_tricolor_chase(_seg->colors[0], _seg->colors[1],
+                                   _seg->colors[1]);
 }
 
 /*
  * Cycles a rainbow over the entire string of LEDs.
  彩虹颜色流水效果
  */
-uint16_t WS2812FX_mode_rainbow_cycle(void) {
+uint16_t WS2812FX_mode_rainbow_cycle(void)
+{
     for (uint16_t i = 0; i < _seg_len; i++) {
-        uint32_t color = WS2812FX_color_wheel(((i * 256 / _seg_len) + _seg_rt->counter_mode_step) & 0xFF);
+        uint32_t color = WS2812FX_color_wheel(
+            ((i * 256 / _seg_len) + _seg_rt->counter_mode_step) & 0xFF);
         WS2812FX_setPixelColor(_seg->stop - i, color);
     }
 
     _seg_rt->counter_mode_step = (_seg_rt->counter_mode_step + 1) & 0xFF;
 
-    if (_seg_rt->counter_mode_step == 0) SET_CYCLE;
+    if (_seg_rt->counter_mode_step == 0)
+        SET_CYCLE;
 
     return (_seg->speed / 256);
 }
@@ -2229,13 +2101,15 @@ uint16_t WS2812FX_mode_rainbow_cycle(void) {
 /*
  * Cycles all LEDs at once through a rainbow.
  */
-uint16_t WS2812FX_mode_rainbow(void) {
+uint16_t WS2812FX_mode_rainbow(void)
+{
     uint32_t color = WS2812FX_color_wheel(_seg_rt->counter_mode_step);
     Adafruit_NeoPixel_fill(color, _seg->start, _seg_len);
 
     _seg_rt->counter_mode_step = (_seg_rt->counter_mode_step + 1) & 0xFF;
 
-    if (_seg_rt->counter_mode_step == 0)  SET_CYCLE;
+    if (_seg_rt->counter_mode_step == 0)
+        SET_CYCLE;
 
     return (_seg->speed / 256);
 }
@@ -2244,27 +2118,30 @@ uint16_t WS2812FX_mode_rainbow(void) {
  * Runs a block of pixels back and forth.
  来回运动像素块
  */
-uint16_t WS2812FX_mode_scan(void) {
+uint16_t WS2812FX_mode_scan(void)
+{
     return WS2812FX_scan(_seg->colors[0], _seg->colors[1], false);
 }
-
 
 /*
  * Runs two blocks of pixels back and forth in opposite directions.
  */
-uint16_t WS2812FX_mode_dual_scan(void) {
+uint16_t WS2812FX_mode_dual_scan(void)
+{
     return WS2812FX_scan(_seg->colors[0], _seg->colors[1], true);
 }
-
 
 /*
  * Fades the LEDs between two colors
  */
-uint16_t WS2812FX_mode_fade(void) {
+uint16_t WS2812FX_mode_fade(void)
+{
     int lum = _seg_rt->counter_mode_step;
-    if (lum > 255) lum = 511 - lum; // lum = 0 -> 255 -> 0
+    if (lum > 255)
+        lum = 511 - lum; // lum = 0 -> 255 -> 0
 
-    uint32_t color = WS2812FX_color_blend(_seg->colors[1], _seg->colors[0], lum);
+    uint32_t color =
+        WS2812FX_color_blend(_seg->colors[1], _seg->colors[0], lum);
     Adafruit_NeoPixel_fill(color, _seg->start, _seg_len);
 
     _seg_rt->counter_mode_step += 4;
@@ -2281,9 +2158,11 @@ uint16_t WS2812FX_mode_fade(void) {
  * _seg->colors[1]，和_seg->colors[0]渐变，若_seg->colors[1]为很色就是呼吸功能
  * lum最小值决定两种颜色混合最小比例。典型值15，若为红色呼吸，LED最暗到15
  */
-uint16_t WS2812FX_mode_breath(void) {
+uint16_t WS2812FX_mode_breath(void)
+{
     int lum = _seg_rt->counter_mode_step;
-    if (lum > 255) lum = 511 - lum; // lum = 15 -> 255 -> 15
+    if (lum > 255)
+        lum = 511 - lum; // lum = 15 -> 255 -> 15
 
     // uint16_t delay;
     // if(lum == 15) delay = 970; // 970 pause before each breath
@@ -2295,30 +2174,29 @@ uint16_t WS2812FX_mode_breath(void) {
     // else if(lum <= 150) delay = 11; // 5
     // else delay = 10; // 4
 
-    uint32_t color = WS2812FX_color_blend(_seg->colors[1], _seg->colors[0], lum);
+    uint32_t color =
+        WS2812FX_color_blend(_seg->colors[1], _seg->colors[0], lum);
     Adafruit_NeoPixel_fill(color, _seg->start, _seg_len);
-    if (_seg_rt->counter_mode_step < 35)
-    {
+    if (_seg_rt->counter_mode_step < 35) {
         _seg_rt->counter_mode_step += 1;
-    }
-    else
-        _seg_rt->counter_mode_step += 2;    //不能修改+2，否则呼吸有明显的不流畅
+    } else
+        _seg_rt->counter_mode_step += 2; //不能修改+2，否则呼吸有明显的不流畅
     if (_seg_rt->counter_mode_step > (512 - 5)) {
         _seg_rt->counter_mode_step = 5;
         SET_CYCLE;
         ws2811fx_set_cycle = 1;
     }
-    return (fc_effect.dream_scene.speed / 50 * 10 + fc_effect.dream_scene.speed % 50);  //原来的速度对遥控调速变化太大了
-
+    return (fc_effect.dream_scene.speed / 50 * 10 +
+            fc_effect.dream_scene.speed % 50); //原来的速度对遥控调速变化太大了
 }
-
 
 /*
  * Lights every LED in a random color. Changes all LED at the same time
  * to new random colors.
  * 每次以随机颜色变换所有LED
  */
-uint16_t WS2812FX_mode_multi_dynamic(void) {
+uint16_t WS2812FX_mode_multi_dynamic(void)
+{
     for (uint16_t i = _seg->start; i <= _seg->stop; i++) {
         WS2812FX_setPixelColor(i, WS2812FX_color_wheel(WS2812FX_random8()));
     }
@@ -2326,21 +2204,20 @@ uint16_t WS2812FX_mode_multi_dynamic(void) {
     return _seg->speed;
 }
 
-
-
 /*
  * Lights all LEDs in one random color up. Then switches them
  * to the next random color.
  * 彩虹跳变
  */
-uint16_t WS2812FX_mode_random_color(void) {
-    _seg_rt->aux_param = WS2812FX_get_random_wheel_index(_seg_rt->aux_param); // aux_param will store our random color wheel index
+uint16_t WS2812FX_mode_random_color(void)
+{
+    _seg_rt->aux_param = WS2812FX_get_random_wheel_index(
+        _seg_rt->aux_param); // aux_param will store our random color wheel index
     uint32_t color = WS2812FX_color_wheel(_seg_rt->aux_param);
     Adafruit_NeoPixel_fill(color, _seg->start, _seg_len);
     SET_CYCLE;
     return _seg->speed;
 }
-
 
 /*
  * Lights every LED in a random color. Changes one random LED after the other
@@ -2348,111 +2225,124 @@ uint16_t WS2812FX_mode_random_color(void) {
  * 以随机颜色点亮每个LED。依次更改一个随机LED
  * 另一种随机颜色。
  */
-uint16_t WS2812FX_mode_single_dynamic(void) {
+uint16_t WS2812FX_mode_single_dynamic(void)
+{
     if (_seg_rt->counter_mode_call == 0) {
         for (uint16_t i = _seg->start; i <= _seg->stop; i++) {
             WS2812FX_setPixelColor(i, WS2812FX_color_wheel(WS2812FX_random8()));
         }
     }
 
-    WS2812FX_setPixelColor(_seg->start + WS2812FX_random16_lim(_seg_len), WS2812FX_color_wheel(WS2812FX_random8()));
+    WS2812FX_setPixelColor(_seg->start + WS2812FX_random16_lim(_seg_len),
+                           WS2812FX_color_wheel(WS2812FX_random8()));
     SET_CYCLE;
     return _seg->speed;
 }
-
 
 /*
  * Turns all LEDs after each other to a random color.
  * Then starts over with another color.
  * 彩虹随机颜色依次流水
  */
-uint16_t WS2812FX_mode_color_wipe_random(void) {
-    if (_seg_rt->counter_mode_step % _seg_len == 0) { // aux_param will store our random color wheel index
-        _seg_rt->aux_param = WS2812FX_get_random_wheel_index(_seg_rt->aux_param);
+uint16_t WS2812FX_mode_color_wipe_random(void)
+{
+    if (_seg_rt->counter_mode_step % _seg_len ==
+        0) { // aux_param will store our random color wheel index
+        _seg_rt->aux_param =
+            WS2812FX_get_random_wheel_index(_seg_rt->aux_param);
     }
     uint32_t color = WS2812FX_color_wheel(_seg_rt->aux_param);
     return WS2812FX_color_wipe(color, color, false) * 2;
 }
 
-
 /*
  * Random color introduced alternating from start and end of strip.
  彩虹颜色往返流水，每次到达起点/终点，变换颜色
  */
-uint16_t WS2812FX_mode_color_sweep_random(void) {
-    if (_seg_rt->counter_mode_step % _seg_len == 0) { // aux_param will store our random color wheel index
-        _seg_rt->aux_param = WS2812FX_get_random_wheel_index(_seg_rt->aux_param);
+uint16_t WS2812FX_mode_color_sweep_random(void)
+{
+    if (_seg_rt->counter_mode_step % _seg_len ==
+        0) { // aux_param will store our random color wheel index
+        _seg_rt->aux_param =
+            WS2812FX_get_random_wheel_index(_seg_rt->aux_param);
     }
     uint32_t color = WS2812FX_color_wheel(_seg_rt->aux_param);
     return WS2812FX_color_wipe(color, color, true) * 2;
 }
 
-
 /*
  * Lights all LEDs one after another.
  */
-uint16_t WS2812FX_mode_color_wipe(void) {
+uint16_t WS2812FX_mode_color_wipe(void)
+{
     return WS2812FX_color_wipe(_seg->colors[0], _seg->colors[1], false);
 }
 
-uint16_t WS2812FX_mode_color_wipe_inv(void) {
+uint16_t WS2812FX_mode_color_wipe_inv(void)
+{
     return WS2812FX_color_wipe(_seg->colors[1], _seg->colors[0], false);
 }
 
-uint16_t WS2812FX_mode_color_wipe_rev(void) {
+uint16_t WS2812FX_mode_color_wipe_rev(void)
+{
     return WS2812FX_color_wipe(_seg->colors[0], _seg->colors[1], true);
 }
 
-uint16_t WS2812FX_mode_color_wipe_rev_inv(void) {
+uint16_t WS2812FX_mode_color_wipe_rev_inv(void)
+{
     return WS2812FX_color_wipe(_seg->colors[1], _seg->colors[0], true);
 }
-
 
 /*
  * Normal blinking. 50% on/off time.
  */
-uint16_t WS2812FX_mode_blink(void) {
+uint16_t WS2812FX_mode_blink(void)
+{
     return WS2812FX_blink(_seg->colors[0], _seg->colors[1], false);
 }
-
 
 /*
  * Classic Blink effect. Cycling through the rainbow.
  彩虹颜色和_seg->colors[1]交替闪烁，彩虹颜色一直在变换
  */
-uint16_t WS2812FX_mode_blink_rainbow(void) {
-    return WS2812FX_blink(WS2812FX_color_wheel(_seg_rt->counter_mode_call & 0xFF), _seg->colors[1], false);
+uint16_t WS2812FX_mode_blink_rainbow(void)
+{
+    return WS2812FX_blink(
+        WS2812FX_color_wheel(_seg_rt->counter_mode_call & 0xFF),
+        _seg->colors[1], false);
 }
-
 
 /*
  * Classic Strobe effect.
  两个颜色爆闪，_seg->colors[1]下突然爆闪一下_seg->colors[0]，
 _seg->colors[0]时间很多眼睛都没察觉
  */
-uint16_t WS2812FX_mode_strobe(void) {
+uint16_t WS2812FX_mode_strobe(void)
+{
     return WS2812FX_blink(_seg->colors[0], _seg->colors[1], true);
 }
-
 
 /*
  * Classic Strobe effect. Cycling through the rainbow.
  彩虹色爆闪
  */
-uint16_t WS2812FX_mode_strobe_rainbow(void) {
-    return WS2812FX_blink(WS2812FX_color_wheel(_seg_rt->counter_mode_call & 0xFF), _seg->colors[1], true);
+uint16_t WS2812FX_mode_strobe_rainbow(void)
+{
+    return WS2812FX_blink(
+        WS2812FX_color_wheel(_seg_rt->counter_mode_call & 0xFF),
+        _seg->colors[1], true);
 }
 
 /*
  * No blinking. Just plain old static light.
  */
-uint16_t  WS2812FX_mode_static(void) {
+uint16_t WS2812FX_mode_static(void)
+{
     Adafruit_NeoPixel_fill(_seg->colors[0], _seg->start, _seg_len);
     SET_CYCLE;
     ws2811fx_set_cycle = 1;
     return _seg->speed;
 }
-
 
 // 多种颜色跳变
 uint16_t WS2812FX_mutil_c_jump(void)
@@ -2461,14 +2351,14 @@ uint16_t WS2812FX_mutil_c_jump(void)
     printf("%s\n", __FUNCTION__);
 #endif
 
-
-    Adafruit_NeoPixel_fill(_seg->colors[_seg_rt->counter_mode_step], _seg->start, _seg_len);
+    Adafruit_NeoPixel_fill(_seg->colors[_seg_rt->counter_mode_step],
+                           _seg->start, _seg_len);
     _seg_rt->counter_mode_step++;
     _seg_rt->counter_mode_step %= _seg->c_n;
-    if (_seg_rt->counter_mode_step == 0) ws2811fx_set_cycle = 1;
+    if (_seg_rt->counter_mode_step == 0)
+        ws2811fx_set_cycle = 1;
     return _seg->speed;
 }
-
 
 // 整条灯带渐变，支持多种颜色之间切换
 // 颜色池：fc_effect.dream_scene.rgb[]
@@ -2479,9 +2369,9 @@ uint16_t WS2812FX_mutil_c_gradual(void)
     uint32_t rgb;
     static uint32_t c0, c1;
     int lum = _seg_rt->counter_mode_step;
-    if (lum > 255) lum = 511 - lum; // lum = 0 -> 255 -> 0
-    if (_seg_rt->aux_param == 0)
-    {
+    if (lum > 255)
+        lum = 511 - lum; // lum = 0 -> 255 -> 0
+    if (_seg_rt->aux_param == 0) {
         _seg_rt->aux_param = 1;
         index = 0;
         c1 = _seg->colors[index];
@@ -2493,16 +2383,11 @@ uint16_t WS2812FX_mutil_c_gradual(void)
 
     Adafruit_NeoPixel_fill(color, _seg->start, _seg_len);
 
-    if (_seg_rt->counter_mode_step == 256)
-    {
+    if (_seg_rt->counter_mode_step == 256) {
         index++;
         index %= _seg->c_n;
-        if (index == 0) ws2811fx_set_cycle = 1;
-        // rgb = ( (uint32_t)_seg->colors[index].r << 16 ) |
-        //         ( (uint32_t)_seg->colors[index].g << 8 ) |
-        //         ( (uint32_t)_seg->colors[index].b ) ;
-
-        // _seg->colors[0] = color;
+        if (index == 0)
+            ws2811fx_set_cycle = 1;
         c1 = _seg->colors[index];
     }
 
@@ -2512,18 +2397,19 @@ uint16_t WS2812FX_mutil_c_gradual(void)
         index++;
         index %= _seg->c_n;
         c0 = _seg->colors[index];
-        if (index == 0) ws2811fx_set_cycle = 1;
+        if (index == 0)
+            ws2811fx_set_cycle = 1;
         SET_CYCLE;
     }
     return (_seg->speed / 5);
 }
 
-
 // w通道呼吸
 uint16_t breath_w(void)
 {
     int lum = _seg_rt->counter_mode_step;
-    if (lum > 255) lum = 511 - lum; // lum = 0 -> 255 -> 0
+    if (lum > 255)
+        lum = 511 - lum; // lum = 0 -> 255 -> 0
 
     fc_effect.w = WS2812FX_color_blend(_seg->colors[1], _seg->colors[0], lum);
     Adafruit_NeoPixel_fill(0, _seg->start, _seg_len);
@@ -2543,35 +2429,29 @@ uint16_t breath_w(void)
     // //   return 10;
     // // }
 
-
-
-    if (_seg_rt->counter_mode_step < 35)
-    {
+    if (_seg_rt->counter_mode_step < 35) {
         _seg_rt->counter_mode_step += 1;
-    }
-    else
-        _seg_rt->counter_mode_step += 2;    //不能修改+2，否则呼吸有明显的不流畅
+    } else
+        _seg_rt->counter_mode_step += 2; //不能修改+2，否则呼吸有明显的不流畅
     if (_seg_rt->counter_mode_step > (512 - 5)) {
         _seg_rt->counter_mode_step = 5;
         SET_CYCLE;
         ws2811fx_set_cycle = 1;
     }
     // return _seg->speed;
-    return (fc_effect.dream_scene.speed / 50 * 10 + fc_effect.dream_scene.speed % 50);  //原来的速度对遥控调速变化太大了
+    return (fc_effect.dream_scene.speed / 50 * 10 +
+            fc_effect.dream_scene.speed % 50); //原来的速度对遥控调速变化太大了
 }
-
 
 // 支持多颜色频闪
 uint16_t WS2812FX_mutil_strobe(void)
 {
-    if (_seg_rt->aux_param == 0)
-    {
-        Adafruit_NeoPixel_fill(_seg->colors[_seg_rt->counter_mode_step], _seg->start, _seg_len);
+    if (_seg_rt->aux_param == 0) {
+        Adafruit_NeoPixel_fill(_seg->colors[_seg_rt->counter_mode_step],
+                               _seg->start, _seg_len);
         _seg_rt->counter_mode_step++;
         _seg_rt->counter_mode_step %= _seg->c_n;
-    }
-    else
-    {
+    } else {
         Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);
     }
     _seg_rt->aux_param = !_seg_rt->aux_param;
@@ -2586,9 +2466,11 @@ uint16_t WS2812FX_mutil_strobe(void)
 uint16_t breath_rgb(void)
 {
     int lum = _seg_rt->counter_mode_step;
-    if (lum > 255) lum = 511 - lum; // lum = 0 -> 255 -> 0
+    if (lum > 255)
+        lum = 511 - lum; // lum = 0 -> 255 -> 0
 
-    uint32_t color = WS2812FX_color_blend(_seg->colors[1], _seg->colors[0], lum);
+    uint32_t color =
+        WS2812FX_color_blend(_seg->colors[1], _seg->colors[0], lum);
     Adafruit_NeoPixel_fill(color, _seg->start, _seg_len);
 
     _seg_rt->counter_mode_step += 1;
@@ -2596,9 +2478,7 @@ uint16_t breath_rgb(void)
         _seg_rt->counter_mode_step = 0;
 
         return 3000 + _seg->speed;
-    }
-    else if (_seg_rt->counter_mode_step == 255)
-    {
+    } else if (_seg_rt->counter_mode_step == 255) {
         return _seg->speed;
     }
 
@@ -2606,8 +2486,6 @@ uint16_t breath_rgb(void)
         return 10;
     }
 }
-
-
 
 // ----------------------------------------------------------------------------全彩音乐效果
 
@@ -2619,27 +2497,25 @@ uint16_t fc_music_gradual(void)
 
     Adafruit_NeoPixel_fill(color, _seg->start, _seg_len);
 
-    if (get_sound_result())
-    {
+    if (get_sound_result()) {
         music_trigger = 0;
         _seg_rt->counter_mode_step += 20;
     }
 
     _seg_rt->counter_mode_step = (_seg_rt->counter_mode_step + 1) & 0xFF;
 
-    if (_seg_rt->counter_mode_step == 0)  SET_CYCLE;
+    if (_seg_rt->counter_mode_step == 0)
+        SET_CYCLE;
     // printf("fc_music_gradual(");
     return (100);
 }
-
 
 // 呼吸，触发渐亮-》渐暗，最后黑，每次变色
 uint16_t fc_music_breath(void)
 {
     extern u8 music_trigger;
     static uint32_t color1;
-    if (get_sound_result())
-    {
+    if (get_sound_result()) {
         // if(_seg_rt->counter_mode_step == 0)
         {
             color1 = WS2812FX_color_wheel(_seg_rt->aux_param);
@@ -2650,12 +2526,12 @@ uint16_t fc_music_breath(void)
     }
 
     int lum = _seg_rt->counter_mode_step;
-    if (lum > 255) lum = 511 - lum; // lum = 0 -> 255 -> 0
+    if (lum > 255)
+        lum = 511 - lum; // lum = 0 -> 255 -> 0
 
     uint32_t color = WS2812FX_color_blend(0, color1, lum);
     Adafruit_NeoPixel_fill(color, _seg->start, _seg_len);
-    if (_seg_rt->counter_mode_step != 0)
-    {
+    if (_seg_rt->counter_mode_step != 0) {
         _seg_rt->counter_mode_step += 8;
     }
     if (_seg_rt->counter_mode_step > 511) {
@@ -2674,7 +2550,7 @@ uint16_t fc_music_static(void)
 
     if (music_trigger)
 
-        // if(get_sound_result())
+    // if(get_sound_result())
     {
         //if(_seg_rt->counter_mode_step == 0)
         {
@@ -2685,7 +2561,7 @@ uint16_t fc_music_static(void)
         Adafruit_NeoPixel_fill(color1, _seg->start, _seg_len);
     }
     //printf("music_static");
-      // return 0xffff;
+    // return 0xffff;
     return 100;
 }
 
@@ -2694,8 +2570,7 @@ uint16_t fc_music_twinkle(void)
 {
     extern u8 music_trigger;
     uint32_t color1;
-    if (get_sound_result())
-    {
+    if (get_sound_result()) {
         // if(_seg_rt->counter_mode_step == 0)
         {
             color1 = WS2812FX_color_wheel(_seg_rt->aux_param);
@@ -2703,9 +2578,7 @@ uint16_t fc_music_twinkle(void)
         }
         // music_trigger = 0;
         Adafruit_NeoPixel_fill(color1, _seg->start, _seg_len);
-    }
-    else
-    {
+    } else {
         Adafruit_NeoPixel_fill(BLACK, _seg->start, _seg_len);
     }
     return 50;
@@ -2754,22 +2627,22 @@ u16 colorful_light_mixed_white_breathing(void)
         要求动画是从 0 到 指定亮度（brightness）再到 0，渐亮->渐灭->一轮动画完成
         步长为 (brightness + 1) * 10ms * 2 / 速度值
     */
-    static volatile u32 temp_step = 0;  // 累计放大了1000倍的步长，超过1000后，才执行动画的下一步骤
+    static volatile u32 temp_step =
+        0; // 累计放大了1000倍的步长，超过1000后，才执行动画的下一步骤
     static volatile u16 brightness = 0; // 亮度值
-    u16 speed = fc_effect.dream_scene.mixed_white_breath_speed; // 接收外部的速度值
+    u16 speed =
+        fc_effect.dream_scene.mixed_white_breath_speed; // 接收外部的速度值
     // u16 speed = (u16)10 * 1000;                            // 接收外部的速度值
-    u32 step = 0;                                             // 步长（放大了1000倍）
+    u32 step = 0; // 步长（放大了1000倍）
     // step = ((u32)fc_effect.b + 1) * 10 * 1000 * 2 / speed; // 实际测试这里的动画时间会比速度值多一倍，这里在分子上多乘以2（渐亮->渐灭->一轮动画完成）
     /*
         实际测试这里的动画时间会比速度值多一倍，这里在分子上多乘以2（渐亮->渐灭->一轮动画完成），
         由于时基是20ms的，这里要再乘以2，总共多乘以4
-    */ 
-    step = ((u32)fc_effect.b + 1) * 10 * 1000 * 4 / speed; 
+    */
+    step = ((u32)fc_effect.b + 1) * 10 * 1000 * 4 / speed;
 
-    if (0 == _seg_rt->counter_mode_step &&
-        0 == _seg_rt->aux_param &&
-        0 == _seg_rt->counter_mode_call)
-    {
+    if (0 == _seg_rt->counter_mode_step && 0 == _seg_rt->aux_param &&
+        0 == _seg_rt->counter_mode_call) {
         /*
             如果是第一次进入，设置默认颜色
             当前颜色为黑色，向目标颜色渐变（看起来像呼吸渐亮）
@@ -2783,13 +2656,10 @@ u16 colorful_light_mixed_white_breathing(void)
     }
 
     temp_step += step;
-    if (temp_step >= 1000)
-    {
+    if (temp_step >= 1000) {
         // 有可能单次的步长会超过1000，这里用循环来逐个递减
-        while (1)
-        {
-            if (temp_step < 1000)
-            {
+        while (1) {
+            if (temp_step < 1000) {
                 // 退出条件，当步长小于1000时，退出
                 break;
             }
@@ -2799,18 +2669,14 @@ u16 colorful_light_mixed_white_breathing(void)
                 brightness 变化范围： 0 -> brightness -> 0
             */
             _seg_rt->counter_mode_step++;
-            if (temp_step >= 1000)
-            {
+            if (temp_step >= 1000) {
                 temp_step -= 1000;
-            }
-            else
-            {
+            } else {
                 temp_step = 0;
             }
 
             brightness = _seg_rt->counter_mode_step;
-            if (brightness > (u16)fc_effect.b)
-            {
+            if (brightness > (u16)fc_effect.b) {
                 brightness = ((u16)fc_effect.b * 2) - brightness;
             }
 
@@ -2818,8 +2684,7 @@ u16 colorful_light_mixed_white_breathing(void)
                 0 -> fc_effect.b，共 fc_effect.b 个步骤，灯光渐亮
                 fc_effect.b -> 0，共 fc_effect.b 个步骤，灯光渐暗
             */
-            if (_seg_rt->counter_mode_step >= ((u32)fc_effect.b * 2))
-            {
+            if (_seg_rt->counter_mode_step >= ((u32)fc_effect.b * 2)) {
                 _seg_rt->counter_mode_step = 0;
                 temp_step = 0;
                 brightness = 0;
@@ -2847,6 +2712,127 @@ u16 colorful_light_mixed_white_breathing(void)
     return 1; // ws2812fx_service() 10ms调用一次，这个值只需要小于10
 }
 
+/**
+ * @brief 多种颜色，循环呼吸，不支持多段颜色。只能呼吸完一种，再切换到下一种颜色继续呼吸
+ *   
+ * @return uint16_t 
+ */
+uint16_t WS2812FX_mode_mutil_color_cycle_breath(void)
+{
+    // =======================================================
+    // 配置项
+    static const u8 max_brightness = 255; // 最大亮度值
+    static const u8 anim_period = 20;     // 函数调用周期，单位：ms
+
+    // =======================================================
+    static u32 dest_color = BLACK; // 目标颜色
+    u32 color;
+    /*
+        每个步骤用时至少 xx ms，因为 ws2812fx_service() xx ms调用一次
+
+        从 0 到 511，
+        步长为1，共512个步骤，至少 5120 ms 完成一次循环
+        步长为2，共256个步骤，至少 2560 ms 完成一次循环
+
+        那么速度值与循环的关系
+        一次循环的时间 == 步骤 * 10ms
+        一次循环的时间 == 512 / 步长 * 10ms
+        速度值 == 512 / 步长 * 10ms
+        步长 == 512 * 10ms / 速度值
+
+
+        如果是从 0 到 指定亮度(brightness)
+        步长为1，共 brightness + 1 步，至少 brightness * 10 ms 完成一次循环
+        步长为2，共 (brightness + 1) / 2 步，至少 brightness * 10 ms / 2 完成一次循环
+
+        速度值与亮度值的关系
+        一次循环的时间 == (brightness + 1) / 步长 * 10ms
+        速度值 == (brightness + 1) / 步长 * 10ms
+        (brightness + 1) / 步长 == 速度值 / 10ms
+        (brightness + 1) == 速度值 / 10ms * 步长
+        步长 == (brightness + 1) * 10ms / 速度值
+    */
+    // u16 step = 0; // 步长
+    // step = 512 * 10 / _seg->speed;
+
+    // 累计放大了1000倍的步长，超过1000后，才执行动画的下一步骤
+    static volatile u32 temp_step = 0;
+    static volatile u16 brightness = 0; // 亮度值
+    u32 step = 0;                       // 步长（放大了1000倍）
+    u32 speed = fc_effect.dream_scene.speed;
+    u32 duration_ms;
+
+    // 将 speed=10~500 映射为一轮 1~5 秒，数值越大呼吸越慢。
+    if (speed < 10) {
+        speed = 10; // 10 ，对应 fc_effect.dream_scene.speed 的最小值
+    } else if (speed > 500) {
+        speed = 500; // 500 ，对应 fc_effect.dream_scene.speed 的最大值
+    }
+    duration_ms = 1000 + ((speed - 10) * 4000) / (500 - 10);
+
+    step = ((u32)max_brightness * 2 * anim_period * 1000) / duration_ms;
+
+    if (0 == _seg_rt->counter_mode_step && 0 == _seg_rt->aux_param &&
+        0 == _seg_rt->counter_mode_call) {
+        /*
+            如果是第一次进入，设置默认颜色
+            当前颜色为黑色，向目标颜色渐变（看起来像呼吸渐亮）
+        */
+        dest_color = _seg->colors[_seg_rt->aux_param];
+        brightness = 0;
+        temp_step = 0;
+    }
+
+    temp_step += step;
+    if (temp_step >= 1000) {
+        // 有可能单次的步长会超过1000，这里用循环来逐个递减
+        while (1) {
+            if (temp_step < 1000) {
+                break;
+            }
+
+            /*
+                没有固定最大亮度的呼吸：
+                brightness 变化范围： 0 -> brightness -> 0
+            */
+            _seg_rt->counter_mode_step++;
+            if (temp_step >= 1000) {
+                temp_step -= 1000;
+            } else {
+                temp_step = 0;
+            }
+
+            brightness = _seg_rt->counter_mode_step;
+            if (brightness > (u16)fc_effect.b) {
+                brightness = ((u16)fc_effect.b * 2) - brightness;
+            }
+
+            /*
+                0 -> max_brightness，共 max_brightness 个步骤，灯光渐亮
+                max_brightness -> 0，共 max_brightness 个步骤，灯光渐暗
+            */
+            if (_seg_rt->counter_mode_step >= ((u32)max_brightness * 2)) {
+                _seg_rt->counter_mode_step = 0;
+                temp_step = 0;
+                brightness = 0;
+
+                // 切换颜色数组 _seg->colors[] 中的下一个颜色
+                _seg_rt->aux_param += 1;
+                if (_seg_rt->aux_param >= _seg->c_n) {
+                    _seg_rt->aux_param = 0;
+                }
+
+                dest_color = _seg->colors[_seg_rt->aux_param];
+                // SET_CYCLE;
+            }
+        }
+    }
+
+    color = WS2812FX_color_blend(BLACK, dest_color, (u8)brightness);
+    Adafruit_NeoPixel_fill(color, _seg->start, _seg_len);
+
+    return 1; // 如果 ws2812fx_service() 10ms调用一次，这个值只需要小于10
+}
 
 //--------------------------------------流星仿照效果-------------------
 #if 0

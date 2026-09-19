@@ -81,28 +81,23 @@ void rf24g_key_event_handle(void)
     rf24g_key_driver_value =
         NO_KEY; // 置为无效键值（由于扫描函数只更新，不会清除，在这里要清除）
 
-    // u8 key_value = rf24g_key_driver_value;
-    // u8 key_driver_event = rf24g_key_driver_event;
-    // u8 rf24g_key_event = rf24g_convert_key_event(key_value, key_driver_event);
-
-    // rf24g_key_driver_value = NO_KEY;
-    // rf24g_key_driver_event = 0;
-
     if (rf24g_key_event == RF24G_KEY_EVENT_NONE) {
         return;
     }
 
     printf("key event == %u\n", (u16)rf24g_key_event);
     switch (rf24g_key_event) {
-    case RF24G_KEY_EVENT_R1C3_LONG:
-        // 长按按键 进行开关灯
-        if (fc_effect.on_off_flag == DEVICE_ON) {
-            soft_rurn_off_lights();
-        } else {
+    case RF24G_KEY_EVENT_R1C3_PRESS:
+        if (0 == fc_effect.on_off_flag) {
             soft_turn_on_the_light();
         }
         break;
-
+    case RF24G_KEY_EVENT_R1C3_LONG:
+        // 长按按键 进行关灯
+        if (fc_effect.on_off_flag == DEVICE_ON) {
+            soft_rurn_off_lights();
+        }
+        break;
     case RF24G_KEY_EVENT_R1C1_PRESS:
         if (0 == fc_effect.on_off_flag) {
             return;
@@ -113,15 +108,8 @@ void rf24g_key_event_handle(void)
             bright_sub();
             save_user_data_area3();
         } else if (fc_effect.Now_state == IS_light_scene) {
-            // USER_TO_DO
-            if (MODE_MIXED_WHITE_BREATH == fc_effect.dream_scene.change_type) {
-                // 如果正处于混白色呼吸
-                // fc_effect.dream_scene.mixed_white_breath_speed = (u16)6000;
-                fc_effect.dream_scene.mixed_white_breath_speed = (u16)4000;
-            } else {
-                fc_effect.dream_scene.speed = 350;
-            }
-
+            // dynamic_mode_speed_sub();
+            fc_effect.dream_scene.speed = 400;
             set_fc_effect();
             save_user_data_area3();
         } else if (fc_effect.Now_state == IS_light_music) {
@@ -141,14 +129,8 @@ void rf24g_key_event_handle(void)
             bright_plus();
             save_user_data_area3();
         } else if (fc_effect.Now_state == IS_light_scene) {
-            if (MODE_MIXED_WHITE_BREATH == fc_effect.dream_scene.change_type) {
-                // 如果正处于混白色呼吸
-                // fc_effect.dream_scene.mixed_white_breath_speed = (u16)10000;
-                fc_effect.dream_scene.mixed_white_breath_speed = (u16)8000;
-            } else {
-                fc_effect.dream_scene.speed = 200;
-            }
-
+            // dynamic_mode_speed_add();
+            fc_effect.dream_scene.speed = 80;
             set_fc_effect();
             save_user_data_area3();
         } else if (fc_effect.Now_state == IS_light_music) {
@@ -260,25 +242,53 @@ void rf24g_key_event_handle(void)
         set_fc_effect();
         save_user_data_area3();
         break;
-    case RF24G_KEY_EVENT_R5C2_PRESS:
+    case RF24G_KEY_EVENT_R5C2_PRESS: {
+        static u8 color_idx = 0;
+        u32 color; //
         if (0 == fc_effect.on_off_flag) {
             return;
         }
 
-        // 七色呼吸
-        ls_set_color(0, BLUE);
-        ls_set_color(1, GREEN);
-        ls_set_color(2, RED);
-        ls_set_color(3, WHITE);
-        ls_set_color(4, YELLOW);
-        ls_set_color(5, CYAN);
-        ls_set_color(6, PURPLE);
-        fc_effect.dream_scene.change_type = MODE_MUTIL_BRAETH;
-        fc_effect.dream_scene.c_n = 7;
+        // 单色呼吸，每按一次切换呼吸的颜色
+        switch (color_idx) {
+        case 0:
+            color = RED;
+            break;
+        case 1:
+            color = BLUE;
+            break;
+        case 2:
+            color = GREEN;
+            break;
+        case 3:
+            color = CYAN;
+            break;
+        case 4:
+            color = YELLOW;
+            break;
+        case 5:
+            color = PURPLE;
+            break;
+        case 6:
+            color = WHITE; // 混白色
+            break;
+        default:
+            color = RED;
+            break;
+        }
+        color_idx++;
+        if (color_idx > 6) {
+            color_idx = 0;
+        }
+
+        ls_set_color(0, color);
+        ls_set_color(1, BLACK);
+        fc_effect.dream_scene.change_type = MODE_SINGLE_C_BREATH;
+        fc_effect.dream_scene.c_n = 2;
         fc_effect.Now_state = IS_light_scene;
         set_fc_effect();
         save_user_data_area3();
-        break;
+    } break;
     case RF24G_KEY_EVENT_R5C3_PRESS:
         if (0 == fc_effect.on_off_flag) {
             return;

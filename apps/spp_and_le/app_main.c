@@ -14,10 +14,13 @@
 #include "app_charge.h"
 #include "app_power_manage.h"
 #include "asm/charge.h"
+
 #include "led_strand_effect.h"
+#include "ws2812_bsp.h"
 #if TCFG_KWS_VOICE_RECOGNITION_ENABLE
 #include "jl_kws/jl_kws_api.h"
 #endif /* #if TCFG_KWS_VOICE_RECOGNITION_ENABLE */
+ 
 
 #include "user_config.h"
 #include "user_ble_debug.h"
@@ -453,7 +456,6 @@ void sound_handle(void)
 // 1ms调用一次
 void main_while(viod)
 {
-    extern void run_tick_per_10ms(void);
     extern void WS2812FX_service();
     extern void ir_timer_handler(void);
     extern void check_mic_sound(void);

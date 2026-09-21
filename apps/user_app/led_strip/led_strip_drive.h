@@ -9,7 +9,7 @@
 #define MIC_PIN     IO_PORTA_08
 #define LEDC_PIN    IO_PORTB_07 
 
-
+extern u8 is_rgbw;
 
 void led_state_init(void);
 void mic_gpio_init();

@@ -1,0 +1,29 @@
+#ifndef __USER_BLE_NOTIFY_H__
+#define __USER_BLE_NOTIFY_H__
+
+#include "typedef.h"
+
+// 发送缓冲区中，一条指令最大的长度：
+#define USER_BLE_NOTIFY_SEND_BUFF_MAX_LEN 30
+// 发送缓冲区中，最大的指令数量：
+#define USER_BLE_NOTIFY_SEND_BUFF_MAX_NUM 30
+
+typedef struct
+{
+    // 发送缓冲区
+    u8 send_buff[USER_BLE_NOTIFY_SEND_BUFF_MAX_NUM]
+                [USER_BLE_NOTIFY_SEND_BUFF_MAX_LEN];
+    u16 send_buff_len[USER_BLE_NOTIFY_SEND_BUFF_MAX_NUM];
+    u8 send_buff_head;
+    u8 send_buff_tail;
+    u8 send_buff_num; 
+} user_ble_notify_param_t;
+
+
+void user_ble_notify_connection_handle_update(u16 handle);
+
+
+void user_ble_notify_param_put(u8 *buff, u16 len);
+void user_ble_notify_param_handle(void);
+
+#endif

@@ -153,6 +153,7 @@ static u8 rf24g_get_key_value(void)
     return NO_KEY;
 }
 
+// 在 le_gatt_client.c -> __resolve_adv_report() 中调用
 void rf24g_parse(adv_report_t *adv_report)
 {
     if (adv_report->length < 13) {

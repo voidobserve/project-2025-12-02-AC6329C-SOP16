@@ -129,6 +129,7 @@
 					<Add directory="../../../user_app/one_wire" />
 					<Add directory="../../../user_app/rf24g" />
 					<Add directory="../../../user_app" />
+					<Add directory="../../../user_app/user_ble_debug" />
 				</Compiler>
 				<Linker>
 					<Add option="-flto" />

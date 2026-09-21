@@ -1,6 +1,7 @@
 #ifndef dp_data_tran_h
 #define dp_data_tran_h
 
+#include "led_strip_sys.h" // hsv_t
 
 #define         DP_TYPE_RAW                     0x00				//RAW
 #define         DP_TYPE_BOOL                    0x01	            //Bool
@@ -129,6 +130,8 @@ extern dp_draw_tool_t    dp_draw_tool;    //DPID_DRAW_TOOL 涂抹功能
 unsigned long string_hex_Byte(char* str, unsigned char Byte_num);
 unsigned short dp_extract_data_handle(unsigned char *buff);
 extern void printf_buf(u8 *buf, u32 len);
+
+void parse_zd_data(unsigned char *LedCommand);
 
 #endif
 

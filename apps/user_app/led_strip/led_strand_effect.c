@@ -16,6 +16,7 @@
 #include "asm/mcpwm.h"
 
 #include "user_config.h"
+#include "user_ble_notify_app.h"
 
 extern void printf_buf(u8 *buf, u32 len);
 static void static_mode(void);
@@ -797,7 +798,7 @@ void soft_rurn_off_lights(void) //软关灯处理
 {
 
     fc_effect.on_off_flag = DEVICE_OFF;
-    external_devices_variable(); //附加功能的控制变量
+    external_devices_variable(); // 附加功能的控制变量
     WS2812FX_stop();
     WS2812FX_strip_off();   // 从WS2812FX_stop() 搬出来，
     save_user_data_area3(); //保存参数配置到flash
@@ -807,7 +808,8 @@ void soft_rurn_off_lights(void) //软关灯处理
     mcpwm_set_duty(pwm_ch1, 0);
     mcpwm_set_duty(pwm_ch2, 0);
     // mcpwm_set_duty(pwm_ch3, 0);
-    fb_led_on_off_state(); //与app同步开关状态
+    // fb_led_on_off_state(); //与app同步开关状态
+    user_ble_notify_light_pwr_sta();
     printf("soft_rurn_off_light!!\n");
 }
 /**************************************************软件开机*****************************************************/
@@ -817,12 +819,13 @@ void soft_turn_on_the_light(void) //软开灯处理
     //flash_printf();
     fc_effect.on_off_flag = DEVICE_ON;
     fc_effect.metemor_on_off = 0x01;
-    save_user_data_area3(); //保存参数配置到flash
+    save_user_data_area3(); // 保存参数配置到flash
     WS2812FX_start();
-    one_wire_set_mode(4);  //360正转
-    enable_one_wire();     //启动发送电机数据
-    open_fan();            //开启风扇
-    fb_led_on_off_state(); //与app同步开关状态
+    one_wire_set_mode(4); // 360正转
+    enable_one_wire();    // 启动发送电机数据
+    open_fan();           // 开启风扇
+    // fb_led_on_off_state(); // 与app同步开关状态
+    user_ble_notify_light_pwr_sta();
 
     printf("soft_turn_on_the_light!!\n");
     //  flash_printf();

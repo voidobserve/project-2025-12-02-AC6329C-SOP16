@@ -797,7 +797,7 @@ static bool __resolve_adv_report(adv_report_t *report_pt, u16 len)
         }
 
         length = *adv_data_pt++;
-// printf_buf(adv_data_pt,30);
+        // printf_buf(adv_data_pt,30);
         if (length >= report_pt->length || (length + i) >= report_pt->length) {
             /*过滤非标准包格式*/
             // printf("!!!error_adv_packet:");

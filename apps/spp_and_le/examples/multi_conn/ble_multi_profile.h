@@ -7,7 +7,6 @@
 #include <stdint.h>
 #include "app_config.h"
 
-
 //特征，判断需要什么服务
 
 //----------------------------------------------------------------------------------------------------------
@@ -79,7 +78,7 @@ static const uint8_t multi_profile_data[] = {
     // 0x0013 VALUE ae10 READ | WRITE | DYNAMIC
     0x08, 0x00, 0x0a, 0x01, 0x13, 0x00, 0x10, 0xae,
 
-#endif 
+#endif
 
 #if 0
     //for uuid128,sample
@@ -109,20 +108,19 @@ static const uint8_t multi_profile_data[] = {
     0x16, 0x00, 0x04, 0x03, 0x19, 0x00, 0x23, 0xd1, 0xbc, 0xea, 0x5f, 0x78, 0x23, 0x15, 0xde, 0xef, 0x12, 0x12, 0x32, 0xf5, 0x00, 0x00,
 #endif
 
-    //////////////////////////////////////////////////////
-    //
-    // 0x0014 PRIMARY_SERVICE  1812
-    //
-    //////////////////////////////////////////////////////
-    // 0x0a, 0x00, 0x02, 0x00, 0x34, 0x00, 0x00, 0x28, 0x12, 0x18,//ios app can't disconn
+//////////////////////////////////////////////////////
+//
+// 0x0014 PRIMARY_SERVICE  1812
+//
+//////////////////////////////////////////////////////
+// 0x0a, 0x00, 0x02, 0x00, 0x34, 0x00, 0x00, 0x28, 0x12, 0x18,//ios app can't disconn
 
-#if 0// authentication
+#if 0 // authentication
     //
     10, 0x00,   0x00, 0x00,    0x1A, 0x00,     0x00, 0x28,     0x0A, 0x18,                                     //primary service declaration
     13, 0x00,   0x02, 0x00,    0x1B, 0x00,     0x03, 0x28,     0x02, 0x1C, 0x00, 0x50, 0x2A,                   //characteristic declaration
     15, 0x00,   0x02, 0x04,    0x1C, 0x00,     0x50, 0x2A,     0x02, 0x8A, 0x24, 0x66, 0x82, 0x34, 0x36,       //PnP ID
 #endif
-
 
 #if 0
     //////////////////////////////////////////////////////
@@ -168,6 +166,7 @@ static const uint8_t multi_profile_data[] = {
 //
 ///////////////////////////////////////////////////////
 
+#if 0
     //////////////////////////////////////////////////////
     //
     // 0x0001 PRIMARY_SERVICE  1800
@@ -180,34 +179,83 @@ static const uint8_t multi_profile_data[] = {
     0x0d, 0x00, 0x02, 0x00, 0x02, 0x00, 0x03, 0x28, 0x0a, 0x03, 0x00, 0x00, 0x2a,
     // 0x0003 VALUE 2a00 READ | WRITE | DYNAMIC  
     0x08, 0x00, 0x0a, 0x01, 0x03, 0x00, 0x00, 0x2a,
+#endif
 
     //////////////////////////////////////////////////////
     //
     // 0x0004 PRIMARY_SERVICE  fff0
     //
     //////////////////////////////////////////////////////
-    0x0a, 0x00, 0x02, 0x00, 0x04, 0x00, 0x00, 0x28, 0xf0, 0xff,
+    // GATT 属性记录格式（小端序）：
+    // [记录长度:2][属性标志:2][属性句柄:2][类型 UUID:2][属性值...]
 
-    /* CHARACTERISTIC,  fff1, READ | WRITE | NOTIFY | DYNAMIC, */
-    // 0x0005 CHARACTERISTIC fff1 READ | WRITE | NOTIFY | DYNAMIC
-    0x0d, 0x00, 0x02, 0x00, 0x05, 0x00, 0x03, 0x28, 0x1a, 0x06, 0x00, 0xf1, 0xff,
-    // 0x0006 VALUE fff1 READ | WRITE | NOTIFY | DYNAMIC
-    0x08, 0x00, 0x1a, 0x01, 0x06, 0x00, 0xf1, 0xff,
-    // 0x0007 CLIENT_CHARACTERISTIC_CONFIGURATION
-    0x0a, 0x00, 0x0a, 0x01, 0x07, 0x00, 0x02, 0x29, 0x00, 0x00,
+    // 0x0004 PRIMARY_SERVICE, UUID 0xFFF0
+    // 0x0004：记录句柄；0x2800：主服务声明类型；
+    // 0xFFF0：服务 UUID，按小端序存储为 F0 FF。
+    0x0a,
+    0x00, // 记录长度 = 10 字节
+    0x02,
+    0x00, // 属性标志 = 主服务声明
+    0x04,
+    0x00, // 属性句柄 = 0x0004
+    0x00,
+    0x28, // 类型 UUID = 0x2800（主服务）
+    0xf0,
+    0xff, // 服务 UUID = 0xFFF0
 
-     /* CHARACTERISTIC,  fff2, WRITE_WITHOUT_RESPONSE | DYNAMIC, */
-    // 0x0008 CHARACTERISTIC fff2 WRITE_WITHOUT_RESPONSE | DYNAMIC 
-    0x0d, 0x00, 0x02, 0x00, 0x08, 0x00, 0x03, 0x28, 0x04, 0x09, 0x00, 0xf2, 0xff,
-    // 0x0009 VALUE fff2 WRITE_WITHOUT_RESPONSE | DYNAMIC  
-    0x08, 0x00, 0x04, 0x01, 0x09, 0x00, 0xf2, 0xff,
+    // 0x0005 CHARACTERISTIC, UUID 0xFFF1, WRITE | NOTIFY
+    // 这是特征声明记录，不是实际的数据 Value 记录。
+    0x0d,
+    0x00, // 记录长度 = 13 字节
+    0x02,
+    0x00, // 属性标志 = 特征声明
+    0x05,
+    0x00, // 属性句柄 = 0x0005
+    0x03,
+    0x28, // 类型 UUID = 0x2803（特征声明）
+    0x18, // 特征属性 = 0x08 写入 | 0x10 通知
+    0x06,
+    0x00, // Value 句柄 = 0x0006
+    0xf1,
+    0xff, // 特征 UUID = 0xFFF1
 
-     /* CHARACTERISTIC,  fff3, DYNAMIC | READ, */
-    // 0x000a CHARACTERISTIC fff3 DYNAMIC | READ 
-    0x0d, 0x00, 0x02, 0x00, 0x0a, 0x00, 0x03, 0x28, 0x02, 0x0b, 0x00, 0xf3, 0xff,
-    // 0x000b VALUE fff3 DYNAMIC | READ  
-    0x08, 0x00, 0x02, 0x01, 0x0b, 0x00, 0xf3, 0xff,
+    // 0x0006 VALUE, UUID 0xFFF1, WRITE | NOTIFY
+    // 第一个 0x08 是记录长度；后面的 0x0118 是本 profile 格式中的
+    // Value 属性标志，不是上面特征声明中的特征属性字节。
+    0x08,
+    0x00, // 记录长度 = 8 字节
+    0x18,
+    0x01, // 属性标志 = 动态属性、写入 | 通知
+    0x06,
+    0x00, // 属性句柄 = 0x0006
+    0xf1,
+    0xff, // Value UUID = 0xFFF1
 
+    // 0x0007 CLIENT_CHARACTERISTIC_CONFIGURATION (CCC)
+    // 手机向这里写入 0x0001，开启 FFF1 通知；
+    // 写入 0x0000，关闭 FFF1 通知。
+    0x0a,
+    0x00, // 记录长度 = 10 字节
+    0x0a,
+    0x01, // 属性标志 = CCC 可读写
+    0x07,
+    0x00, // 属性句柄 = 0x0007
+    0x02,
+    0x29, // 类型 UUID = 0x2902（CCC 配置描述符）
+    0x00,
+    0x00, // 初始 CCC 值 = 0，通知未开启
+
+//  /* CHARACTERISTIC,  fff2, WRITE_WITHOUT_RESPONSE | DYNAMIC, */
+// // 0x0008 CHARACTERISTIC fff2 WRITE_WITHOUT_RESPONSE | DYNAMIC
+// 0x0d, 0x00, 0x02, 0x00, 0x08, 0x00, 0x03, 0x28, 0x04, 0x09, 0x00, 0xf2, 0xff,
+// // 0x0009 VALUE fff2 WRITE_WITHOUT_RESPONSE | DYNAMIC
+// 0x08, 0x00, 0x04, 0x01, 0x09, 0x00, 0xf2, 0xff,
+
+//  /* CHARACTERISTIC,  fff3, DYNAMIC | READ, */
+// // 0x000a CHARACTERISTIC fff3 DYNAMIC | READ
+// 0x0d, 0x00, 0x02, 0x00, 0x0a, 0x00, 0x03, 0x28, 0x02, 0x0b, 0x00, 0xf3, 0xff,
+// // 0x000b VALUE fff3 DYNAMIC | READ
+// 0x08, 0x00, 0x02, 0x01, 0x0b, 0x00, 0xf3, 0xff,
 
 #if RCSP_BTMATE_EN
     //////////////////////////////////////////////////////
@@ -215,50 +263,107 @@ static const uint8_t multi_profile_data[] = {
     // 0x0004 PRIMARY_SERVICE  ae00
     //
     //////////////////////////////////////////////////////
-    0x0a, 0x00, 0x02, 0x00, 0x80, 0x00, 0x00, 0x28, 0x00, 0xae,
+    0x0a,
+    0x00,
+    0x02,
+    0x00,
+    0x80,
+    0x00,
+    0x00,
+    0x28,
+    0x00,
+    0xae,
 
     /* CHARACTERISTIC,  ae01, WRITE_WITHOUT_RESPONSE | DYNAMIC, */
     // 0x0040 CHARACTERISTIC ae01 WRITE_WITHOUT_RESPONSE | DYNAMIC
-    0x0d, 0x00, 0x02, 0x00, 0x81, 0x00, 0x03, 0x28, 0x04, 0x82, 0x00, 0x01, 0xae,
+    0x0d,
+    0x00,
+    0x02,
+    0x00,
+    0x81,
+    0x00,
+    0x03,
+    0x28,
+    0x04,
+    0x82,
+    0x00,
+    0x01,
+    0xae,
     // 0x0041 VALUE ae01 WRITE_WITHOUT_RESPONSE | DYNAMIC
-    0x08, 0x00, 0x04, 0x01, 0x82, 0x00, 0x01, 0xae,
+    0x08,
+    0x00,
+    0x04,
+    0x01,
+    0x82,
+    0x00,
+    0x01,
+    0xae,
 
     /* CHARACTERISTIC,  ae02, NOTIFY, */
     // 0x0042 CHARACTERISTIC ae02 NOTIFY
-    0x0d, 0x00, 0x02, 0x00, 0x83, 0x00, 0x03, 0x28, 0x10, 0x84, 0x00, 0x02, 0xae,
+    0x0d,
+    0x00,
+    0x02,
+    0x00,
+    0x83,
+    0x00,
+    0x03,
+    0x28,
+    0x10,
+    0x84,
+    0x00,
+    0x02,
+    0xae,
     // 0x0043 VALUE ae02 NOTIFY
-    0x08, 0x00, 0x10, 0x00, 0x84, 0x00, 0x02, 0xae,
+    0x08,
+    0x00,
+    0x10,
+    0x00,
+    0x84,
+    0x00,
+    0x02,
+    0xae,
     // 0x0044 CLIENT_CHARACTERISTIC_CONFIGURATION
-    0x0a, 0x00, 0x0a, 0x01, 0x85, 0x00, 0x02, 0x29, 0x00, 0x00,
+    0x0a,
+    0x00,
+    0x0a,
+    0x01,
+    0x85,
+    0x00,
+    0x02,
+    0x29,
+    0x00,
+    0x00,
 #endif
     // END
-    0x00, 0x00,
+    0x00,
+    0x00,
 };
 //
 // characteristics <--> handles
 //
 #if RCSP_BTMATE_EN
-#define ATT_CHARACTERISTIC_ae01_02_VALUE_HANDLE 0x0082
-#define ATT_CHARACTERISTIC_ae02_02_VALUE_HANDLE 0x0084
+#define ATT_CHARACTERISTIC_ae01_02_VALUE_HANDLE                0x0082
+#define ATT_CHARACTERISTIC_ae02_02_VALUE_HANDLE                0x0084
 #define ATT_CHARACTERISTIC_ae02_02_CLIENT_CONFIGURATION_HANDLE 0x0085
 #endif
 
 #if 0
-#define ATT_CHARACTERISTIC_2a00_01_VALUE_HANDLE 0x0003
-#define ATT_CHARACTERISTIC_ae01_01_VALUE_HANDLE 0x0006
-#define ATT_CHARACTERISTIC_ae02_01_VALUE_HANDLE 0x0008
+#define ATT_CHARACTERISTIC_2a00_01_VALUE_HANDLE                0x0003
+#define ATT_CHARACTERISTIC_ae01_01_VALUE_HANDLE                0x0006
+#define ATT_CHARACTERISTIC_ae02_01_VALUE_HANDLE                0x0008
 #define ATT_CHARACTERISTIC_ae02_01_CLIENT_CONFIGURATION_HANDLE 0x0009
-#define ATT_CHARACTERISTIC_ae03_01_VALUE_HANDLE 0x000b
-#define ATT_CHARACTERISTIC_ae04_01_VALUE_HANDLE 0x000d
+#define ATT_CHARACTERISTIC_ae03_01_VALUE_HANDLE                0x000b
+#define ATT_CHARACTERISTIC_ae04_01_VALUE_HANDLE                0x000d
 #define ATT_CHARACTERISTIC_ae04_01_CLIENT_CONFIGURATION_HANDLE 0x000e
-#define ATT_CHARACTERISTIC_ae05_01_VALUE_HANDLE 0x0010
+#define ATT_CHARACTERISTIC_ae05_01_VALUE_HANDLE                0x0010
 #define ATT_CHARACTERISTIC_ae05_01_CLIENT_CONFIGURATION_HANDLE 0x0011
-#define ATT_CHARACTERISTIC_ae10_01_VALUE_HANDLE 0x0013
+#define ATT_CHARACTERISTIC_ae10_01_VALUE_HANDLE                0x0013
 
-#define ATT_CHARACTERISTIC_ae3b_01_VALUE_HANDLE 0x0042
-#define ATT_CHARACTERISTIC_ae3c_01_VALUE_HANDLE 0x0044
+#define ATT_CHARACTERISTIC_ae3b_01_VALUE_HANDLE                0x0042
+#define ATT_CHARACTERISTIC_ae3c_01_VALUE_HANDLE                0x0044
 #define ATT_CHARACTERISTIC_ae3c_01_CLIENT_CONFIGURATION_HANDLE 0x0045
-#define ATT_CHARACTERISTIC_2a05_01_VALUE_HANDLE 0x0048
+#define ATT_CHARACTERISTIC_2a05_01_VALUE_HANDLE                0x0048
 #define ATT_CHARACTERISTIC_2a05_01_CLIENT_CONFIGURATION_HANDLE 0x0049
 #endif
 
@@ -268,16 +373,10 @@ static const uint8_t multi_profile_data[] = {
 // #define ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE 0x0006
 // #define ATT_CHARACTERISTIC_fff1_01_CLIENT_CONFIGURATION_HANDLE 0x0007
 
-
-
-#define ATT_CHARACTERISTIC_2a00_01_VALUE_HANDLE 0x0003
-#define ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE 0x0006
+// #define ATT_CHARACTERISTIC_2a00_01_VALUE_HANDLE 0x0003
+#define ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE                0x0006
 #define ATT_CHARACTERISTIC_fff1_01_CLIENT_CONFIGURATION_HANDLE 0x0007
-#define ATT_CHARACTERISTIC_fff2_01_VALUE_HANDLE 0x0009
-#define ATT_CHARACTERISTIC_fff3_01_VALUE_HANDLE 0x000b
-
-
-
+// #define ATT_CHARACTERISTIC_fff2_01_VALUE_HANDLE 0x0009
+// #define ATT_CHARACTERISTIC_fff3_01_VALUE_HANDLE 0x000b
 
 #endif
-

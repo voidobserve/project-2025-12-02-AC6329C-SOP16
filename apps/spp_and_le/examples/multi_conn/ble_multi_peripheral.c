@@ -34,6 +34,8 @@
 #include "ble_multi_profile.h"
 
 #include "user_ble_debug.h"
+#include "dp_data_tran.h"
+#include "user_ble_notify.h"
 
 #if CONFIG_APP_MULTI && CONFIG_BT_GATT_SERVER_NUM
 
@@ -234,6 +236,10 @@ static int multi_event_packet_handler(int event, u8 *packet, u16 size,
         user_ble_debug_connection_handle_update(
             little_endian_read_16(packet, 0));
 #endif
+
+        // 更新连接句柄
+        user_ble_notify_connection_handle_update(
+            little_endian_read_16(packet, 0));
         break;
 
     case GATT_COMM_EVENT_DISCONNECT_COMPLETE:
@@ -311,85 +317,7 @@ static int multi_event_packet_handler(int event, u8 *packet, u16 size,
  *  \note      profile的读属性uuid 有配置 DYNAMIC 关键字，就有read_callback 回调
  */
 /*************************************************************************************************/
-// ATT Client Read Callback for Dynamic Data
-// - if buffer == NULL, don't copy data, just return size of value
-// - if buffer != NULL, copy data and return number bytes copied
-// @param offset defines start of attribute value
-#if 0
-static uint16_t multi_att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, uint8_t *buffer, uint16_t buffer_size)
-{
-    uint16_t  att_value_len = 0;
-    uint16_t handle = att_handle;
 
-    log_info("read_callback,conn_handle =%04x, handle=%04x,buffer=%08x\n", connection_handle, handle, (u32)buffer);
-
-    switch (handle) {
-    case ATT_CHARACTERISTIC_2a00_01_VALUE_HANDLE: {
-        char *gap_name = ble_comm_get_gap_name();
-        att_value_len = strlen(gap_name);
-
-        if ((offset >= att_value_len) || (offset + buffer_size) > att_value_len) {
-            break;
-        }
-
-        if (buffer) {
-            memcpy(buffer, &gap_name[offset], buffer_size);
-            att_value_len = buffer_size;
-            log_info("\n------read gap_name: %s\n", gap_name);
-        }
-    }
-    break;
-
-    case ATT_CHARACTERISTIC_ae10_01_VALUE_HANDLE:
-        att_value_len = sizeof(multi_test_read_write_buf);
-        if ((offset >= att_value_len) || (offset + buffer_size) > att_value_len) {
-            break;
-        }
-
-        if (buffer) {
-            memcpy(buffer, &multi_test_read_write_buf[offset], buffer_size);
-            att_value_len = buffer_size;
-        }
-        break;
-
-    case ATT_CHARACTERISTIC_ae04_01_CLIENT_CONFIGURATION_HANDLE:
-    case ATT_CHARACTERISTIC_ae02_01_CLIENT_CONFIGURATION_HANDLE:
-    case ATT_CHARACTERISTIC_ae05_01_CLIENT_CONFIGURATION_HANDLE:
-    case ATT_CHARACTERISTIC_ae3c_01_CLIENT_CONFIGURATION_HANDLE:
-    case ATT_CHARACTERISTIC_2a05_01_CLIENT_CONFIGURATION_HANDLE:
-        if (buffer) {
-            buffer[0] = ble_gatt_server_characteristic_ccc_get(connection_handle, handle);
-            buffer[1] = 0;
-        }
-        att_value_len = 2;
-        break;
-
-
-
-    case ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE:
-        char *gap_name = ble_comm_get_gap_name();
-        att_value_len = strlen(gap_name);
-
-        if ((offset >= att_value_len) || (offset + buffer_size) > att_value_len) {
-            break;
-        }
-
-        if (buffer) {
-            memcpy(buffer, &gap_name[offset], buffer_size);
-            att_value_len = buffer_size;
-            log_info("\n------read gap_name: %s\n", gap_name);
-        }
-        break;
-
-
-    default:
-        break;
-    }
-
-    log_info("att_value_len= %d\n", att_value_len);
-    return att_value_len;
-}
-#endif
 extern u8 fff3_buf_len;
 extern u8 _0103_f;
 extern uint8_t Send_buffer[50];
@@ -404,7 +332,8 @@ static uint16_t multi_att_read_callback(hci_con_handle_t connection_handle,
              connection_handle, handle, (u32)buffer);
 
     switch (handle) {
-    case ATT_CHARACTERISTIC_2a00_01_VALUE_HANDLE: {
+#if 0
+    case ATT_CHARACTERISTIC_2a00_01_VALUE_HANDLE:
         char *gap_name = ble_comm_get_gap_name();
         att_value_len = strlen(gap_name);
 
@@ -418,22 +347,13 @@ static uint16_t multi_att_read_callback(hci_con_handle_t connection_handle,
             att_value_len = buffer_size;
             log_info("\n------read gap_name: %s\n", gap_name);
         }
-    } break;
-
-    case ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE:
-        // char *gap_name = ble_comm_get_gap_name();
-        // att_value_len = strlen(gap_name);
-
-        // if ((offset >= att_value_len) || (offset + buffer_size) > att_value_len) {
-        //     break;
-        // }
-
-        // if (buffer) {
-        //     memcpy(buffer, &gap_name[offset], buffer_size);
-        //     att_value_len = buffer_size;
-        //     log_info("\n------read gap_name: %s\n", gap_name);
-        // }
         break;
+#endif
+
+#if 0
+    case ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE:
+        break;
+#endif
     case ATT_CHARACTERISTIC_fff1_01_CLIENT_CONFIGURATION_HANDLE:
         if (buffer) {
             buffer[0] = att_get_ccc_config(handle);
@@ -442,6 +362,7 @@ static uint16_t multi_att_read_callback(hci_con_handle_t connection_handle,
         att_value_len = 2;
         break;
 
+#if 0
     case ATT_CHARACTERISTIC_fff3_01_VALUE_HANDLE:
         extern void fff3_fb_state(void);
         char *gap_name = ble_comm_get_gap_name();
@@ -465,6 +386,7 @@ static uint16_t multi_att_read_callback(hci_con_handle_t connection_handle,
         printf("ATT_CHARACTERISTIC_fff3_01_VALUE_HANDLE");
 
         break;
+#endif
 
     default:
         break;
@@ -593,28 +515,26 @@ static int multi_att_write_callback(hci_con_handle_t connection_handle,
     case ATT_CHARACTERISTIC_fff1_01_CLIENT_CONFIGURATION_HANDLE:
         // set_ble_work_state(BLE_ST_NOTIFY_IDICATE);
         // trans_send_connetion_updata_deal(connection_handle);
-        multi_send_connetion_update_deal(connection_handle); //使用多从机+主机
+        multi_send_connetion_update_deal(connection_handle); // 使用多从机+主机
         log_info("\n------write ccc:%04x,%02x\n", handle, buffer[0]);
         att_set_ccc_config(handle, buffer[0]);
         // ble_gatt_server_characteristic_ccc_set(connection_handle, handle, buffer[0]);
         break;
 
     case ATT_CHARACTERISTIC_fff1_01_VALUE_HANDLE:
+        // 打印接收到的数据和数据长度
         log_info("\n-fff1_rx(%d):", buffer_size);
         printf_buf(buffer, buffer_size);
-
-        // extern void parse_led_strip_data(u8 *pBuf, u8);
-        // extern void parse_zd_data(unsigned char *LedCommand);
-        // parse_zd_data(buffer);  //中道指令处理
-        // parse_led_strip_data(buffer,buffer_size);//涂鸦
+        parse_zd_data(buffer);
+        // parse_led_strip_data(buffer, buffer_size);
         break;
 
-    case ATT_CHARACTERISTIC_fff2_01_VALUE_HANDLE: //只写
+#if 0   
+    case ATT_CHARACTERISTIC_fff2_01_VALUE_HANDLE: // 只写
         log_info("\n-fff2_rx(%d):", buffer_size);
-        printf_buf(buffer, buffer_size);
+        // printf_buf(buffer, buffer_size);
         parse_zd_data(buffer);
         parse_led_strip_data(buffer, buffer_size);
-
         break;
 
 #if RCSP_BTMATE_EN
@@ -643,6 +563,7 @@ static int multi_att_write_callback(hci_con_handle_t connection_handle,
         }
 #endif
         break;
+#endif
 
     default:
         break;
@@ -682,15 +603,16 @@ static int multi_make_set_adv_data(void)
     }
 #endif
 
+    // 广播头
     u8 info[13]; //客户机型数据
     info[0] = 'Z';
     info[1] = 'D';
-    info[2] = 0x00; //
+    info[2] = 0x00;
     info[3] = 0xD9;
     info[4] = 0x03;
     info[5] = 0x86;
     info[6] = 0x07;
-    le_controller_get_mac(&info[7]); //获取ble的蓝牙public地址
+    le_controller_get_mac(&info[7]); // 获取ble的蓝牙 public 地址
 
     offset += make_eir_packet_data(&buf[offset], offset,
                                    HCI_EIR_DATATYPE_MANUFACTURER_SPECIFIC_DATA,

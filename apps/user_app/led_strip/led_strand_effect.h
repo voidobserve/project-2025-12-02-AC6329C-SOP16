@@ -84,7 +84,7 @@ typedef enum
     MODE_SINGLE_C_BREATH = 24, //单色呼吸
     MODE_GRADUAL = 25,         //标准渐变，彩虹颜色
     MODE_BREATH_W = 26,        //W通道呼吸
-    MODE_MUTIL_C_BREATH,
+    MODE_MUTIL_COLOR_BREATH,
 
     MODE_MIXED_WHITE_BREATH, // 混白色呼吸
 

@@ -2190,6 +2190,60 @@ uint16_t WS2812FX_mode_breath(void)
             fc_effect.dream_scene.speed % 50); //原来的速度对遥控调速变化太大了
 }
 
+// 支持多种颜色循环呼吸
+uint16_t WS2812FX_mode_multi_color_breath(void)
+{
+    int lum, step;
+    uint32_t color;
+    static u8 color_idx;
+
+    if (0 == _seg_rt->counter_mode_call) {
+        // 刚调用，初始化对应的数据
+        color_idx = 0;
+    }
+
+    /*
+        与 WS2812FX_mode_breath 相同的三角形亮度曲线，只是把两端重新映射到 0：
+            step :   5 .................. 255 .................. 509
+            lum  :   0 .................. 255 ..................  0
+
+        - lum = 0 混合出 BLACK(最暗)，lum = 255 混合出当前颜色(最亮)，与 WS2812FX_mode_breath 一致
+        - 原曲线末尾 lum 最小只有 2(灯还残留一点颜色)，这里让它刚好收到 0，
+          所以换色时灯是真正熄灭的
+        - 亮度是连续变化到 0 的，不会出现"渐灭时突然变黑"的台阶
+        - 只改亮度曲线，counter_mode_step 的步进和返回延时都不变，
+          呼吸周期与 WS2812FX_mode_breath 保持一致
+    */
+    step = _seg_rt->counter_mode_step;
+    if (step <= 255) {
+        lum = (step - 5) * 255 / 250; // 5 -> 0, 255 -> 255
+    } else {
+        lum = (509 - step) * 255 / 254; // 509 -> 0, 255 -> 255
+    }
+    if (lum < 0) {
+        lum = 0;
+    }
+
+    color = WS2812FX_color_blend(BLACK, _seg->colors[color_idx], lum);
+    Adafruit_NeoPixel_fill(color, _seg->start, _seg_len);
+    if (_seg_rt->counter_mode_step < 35) {
+        _seg_rt->counter_mode_step += 1;
+    } else
+        _seg_rt->counter_mode_step += 2; //不能修改+2，否则呼吸有明显的不流畅
+    if (_seg_rt->counter_mode_step > (512 - 5)) {
+        _seg_rt->counter_mode_step = 5;
+        SET_CYCLE;
+        ws2811fx_set_cycle = 1;
+        // lum 刚好收到 0(灯完全熄灭)，再切换下一种颜色，切换过程不会被看到
+        color_idx++;
+        if (color_idx >= _seg->c_n) {
+            color_idx = 0;
+        }
+    }
+    return (fc_effect.dream_scene.speed / 50 * 10 +
+            fc_effect.dream_scene.speed % 50); //原来的速度对遥控调速变化太大了
+}
+
 /*
  * Lights every LED in a random color. Changes all LED at the same time
  * to new random colors.

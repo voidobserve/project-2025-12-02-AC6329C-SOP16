@@ -800,9 +800,9 @@ void soft_rurn_off_lights(void) //软关灯处理
     fc_effect.on_off_flag = DEVICE_OFF;
     external_devices_variable(); // 附加功能的控制变量
     WS2812FX_stop();
-    WS2812FX_strip_off();   // 从WS2812FX_stop() 搬出来，
-    
-    close_fan();            //关闭风扇
+    WS2812FX_strip_off(); // 从WS2812FX_stop() 搬出来，
+
+    close_fan(); //关闭风扇
     //关闭RGBW灯，这个设计时因为有W的控制灯
     mcpwm_set_duty(pwm_ch0, 0);
     mcpwm_set_duty(pwm_ch1, 0);
@@ -815,19 +815,20 @@ void soft_rurn_off_lights(void) //软关灯处理
 }
 /**************************************************软件开机*****************************************************/
 void soft_turn_on_the_light(void) //软开灯处理
-{ 
+{
     fc_effect.on_off_flag = DEVICE_ON;
     fc_effect.metemor_on_off = 0x01;
-    
+
     WS2812FX_start();
-    one_wire_set_mode(4); // 360正转
-    enable_one_wire();    // 启动发送电机数据
+    // 电机带记忆：按记忆的模式/开关状态恢复电机
+    // （记忆为关闭时，这里会重新发送电机关闭的信号，重新上电同样有效）
+    motor_state_recover();
     open_fan();           // 开启风扇
 
     save_user_data_area3(); // 保存参数配置到flash
     user_ble_notify_light_pwr_sta();
 
-    printf("soft_turn_on_the_light!!\n"); 
+    printf("soft_turn_on_the_light!!\n");
 }
 
 ON_OFF_FLAG get_on_off_state(void)
@@ -893,7 +894,7 @@ void set_music_mode(u8 m)
     printf("\n set_music_mode = %d", m);
     fc_effect.music.m = m;
     fc_effect.Now_state = IS_light_music;
- 
+
     set_fc_effect();
 }
 
@@ -1219,6 +1220,21 @@ static void ls_scene_effect(void)
 
         // printf("fc_effect.dream_scene.mixed_white_breath_speed = %u\n", (u16)fc_effect.dream_scene.mixed_white_breath_speed);
     } break;
+    case MODE_MUTIL_COLOR_BREATH:
+        extern uint16_t WS2812FX_mode_multi_color_breath(void);
+        WS2812FX_setSegment_colorOptions(
+            0,                                 //第0段
+            0,                                 // 起始位置
+            0,                                 //结束位置
+            &WS2812FX_mode_multi_color_breath, //效果
+            0,                                 //颜色，WS2812FX_setColors设置
+            fc_effect.dream_scene
+                .mixed_white_breath_speed, // 速度 （混白色呼吸 不依靠该传参，这里可以随便填）
+            SIZE_MEDIUM);                  //选项，这里像素点大小：3 
+        WS2812FX_set_coloQty(0, fc_effect.dream_scene.c_n);
+        ls_set_colors(fc_effect.dream_scene.c_n, &fc_effect.dream_scene.rgb); 
+        WS2812FX_start();
+        break;
 
     default:
         break;

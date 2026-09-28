@@ -1849,8 +1849,7 @@ obj/Release/apps/user_app/led_strip/led_strand_effect.o
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,close_fan,l
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,mcpwm_set_duty,l
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,user_ble_notify_light_pwr_sta,l
--r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,one_wire_set_mode,l
--r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,enable_one_wire,l
+-r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,motor_state_recover,l
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,open_fan,l
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,get_on_off_state,pl
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,set_on_off_led,pl
@@ -1934,6 +1933,7 @@ obj/Release/apps/user_app/led_strip/led_strand_effect.o
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,WS2812FX_mode_static,l
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,unbind_effect,l
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,colorful_light_mixed_white_breathing,l
+-r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,WS2812FX_mode_multi_color_breath,l
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,fc_effect,pl
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,zd_countdown,l
 -r=obj/Release/apps/user_app/led_strip/led_strand_effect.o,meteor_mode,pl
@@ -2017,6 +2017,9 @@ obj/Release/apps/user_app/one_wire/one_wire.o
 -r=obj/Release/apps/user_app/one_wire/one_wire.o,one_wire_send,pl
 -r=obj/Release/apps/user_app/one_wire/one_wire.o,one_wire_set_mode,pl
 -r=obj/Release/apps/user_app/one_wire/one_wire.o,printf,l
+-r=obj/Release/apps/user_app/one_wire/one_wire.o,get_motor_switch_state,pl
+-r=obj/Release/apps/user_app/one_wire/one_wire.o,motor_stop_temporary,pl
+-r=obj/Release/apps/user_app/one_wire/one_wire.o,motor_state_recover,pl
 -r=obj/Release/apps/user_app/one_wire/one_wire.o,one_wire_set_period,pl
 -r=obj/Release/apps/user_app/one_wire/one_wire.o,one_wire_set_dir,pl
 -r=obj/Release/apps/user_app/one_wire/one_wire.o,get_stepmotor_mode,pl
@@ -2030,6 +2033,7 @@ obj/Release/apps/user_app/one_wire/one_wire.o
 -r=obj/Release/apps/user_app/one_wire/one_wire.o,get_sound_result,l
 -r=obj/Release/apps/user_app/one_wire/one_wire.o,clean_stepmorot_flag,pl
 -r=obj/Release/apps/user_app/one_wire/one_wire.o,stepmotor,pl
+-r=obj/Release/apps/user_app/one_wire/one_wire.o,save_user_data_area3,l
 -r=obj/Release/apps/user_app/one_wire/one_wire.o,Motor_Switch,pl
 -r=obj/Release/apps/user_app/one_wire/one_wire.o,send_base_ins,pl
 -r=obj/Release/apps/user_app/one_wire/one_wire.o,period,pl
@@ -2152,11 +2156,10 @@ obj/Release/apps/user_app/rf24g/rf24g_app.o
 -r=obj/Release/apps/user_app/rf24g/rf24g_app.o,set_static_mode,l
 -r=obj/Release/apps/user_app/rf24g/rf24g_app.o,parse_zd_data,l
 -r=obj/Release/apps/user_app/rf24g/rf24g_app.o,ls_set_color,l
--r=obj/Release/apps/user_app/rf24g/rf24g_app.o,Motor_Switch,l
--r=obj/Release/apps/user_app/rf24g/rf24g_app.o,set_music_mode,l
 -r=obj/Release/apps/user_app/rf24g/rf24g_app.o,one_wire_set_mode,l
--r=obj/Release/apps/user_app/rf24g/rf24g_app.o,one_wire_set_period,l
 -r=obj/Release/apps/user_app/rf24g/rf24g_app.o,enable_one_wire,l
+-r=obj/Release/apps/user_app/rf24g/rf24g_app.o,set_music_mode,l
+-r=obj/Release/apps/user_app/rf24g/rf24g_app.o,one_wire_set_period,l
 -r=obj/Release/apps/user_app/rf24g/rf24g_app.o,off_long_cnt,pl
 -r=obj/Release/apps/user_app/rf24g/rf24g_app.o,all_mode,pl
 -r=obj/Release/apps/user_app/rf24g/rf24g_app.o,sevrn_color_breath,pl
@@ -2454,6 +2457,7 @@ obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o
 -r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,WS2812FX_mode_dual_scan,pl
 -r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,WS2812FX_mode_fade,pl
 -r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,WS2812FX_mode_breath,pl
+-r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,WS2812FX_mode_multi_color_breath,pl
 -r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,WS2812FX_mode_multi_dynamic,pl
 -r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,WS2812FX_mode_random_color,pl
 -r=obj/Release/apps/user_app/ws2812-fx-lib/WS2812FX_C/ws2812fx_effect.o,WS2812FX_mode_single_dynamic,pl

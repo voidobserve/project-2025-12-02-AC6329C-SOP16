@@ -246,6 +246,8 @@ void rf24g_key_event_handle(void)
         save_user_data_area3();
         break;
     case RF24G_KEY_EVENT_R5C2_PRESS: {
+
+#if 0
         static u8 color_idx = 0;
         u32 color; //
         if (0 == fc_effect.on_off_flag) {
@@ -291,6 +293,22 @@ void rf24g_key_event_handle(void)
         fc_effect.Now_state = IS_light_scene;
         set_fc_effect();
         save_user_data_area3();
+#endif
+
+        // 七色循环呼吸
+        ls_set_color(0, RED);
+        ls_set_color(1, GREEN);
+        ls_set_color(2, BLUE);
+        ls_set_color(3, WHITE);
+        ls_set_color(4, YELLOW);
+        ls_set_color(5, CYAN);
+        ls_set_color(6, PURPLE);
+        fc_effect.dream_scene.change_type = MODE_MUTIL_COLOR_BREATH;
+        fc_effect.dream_scene.c_n = 7;
+        fc_effect.Now_state = IS_light_scene;
+        set_fc_effect();
+        save_user_data_area3();
+
     } break;
     case RF24G_KEY_EVENT_R5C3_PRESS:
         if (0 == fc_effect.on_off_flag) {
@@ -307,8 +325,14 @@ void rf24g_key_event_handle(void)
         }
 
         // 电机转速调节 5挡   8s 13s 18s 21s 26s 35s
-        extern void Motor_Switch(void);
-        Motor_Switch();
+        // extern void Motor_Switch(void);
+        // Motor_Switch();
+
+        // 只关闭电机
+        one_wire_set_mode(6);
+        enable_one_wire();
+        save_user_data_area3(); // 保存电机关闭状态，下次开机/重新上电重发关闭信号
+
         break;
     case RF24G_KEY_EVENT_R6C2_PRESS:
         if (0 == fc_effect.on_off_flag) {

@@ -5,6 +5,10 @@
 #include "le/ble_api.h" // adv_report_t
 #include "key_driver.h"
 
+/* 2.4G遥控器诊断打印开关: 0-关闭(正常使用), 1-打开(排查问题用) */
+#define RF24G_DEBUG_LOG 0
+#define RF24G_WATCH_DOG_DEBUG_ENABLE 0
+
 // 按键事件种类，刚按下、短按、长按、持续、长按后松开
 #define RF24G_KEY_EVENT_MAX 5
 
@@ -214,6 +218,10 @@ extern const u8 rf24g_parse_table[24][RF24G_KEY_EVENT_MAX + 1];
 extern volatile u8 rf24g_key_driver_event ; // 由 key_driver_scan() 更新
 extern volatile u8 rf24g_key_driver_value ; // 由 key_driver_scan() 更新
 extern volatile struct key_driver_para rf24g_scan_para;
+
+#if RF24G_WATCH_DOG_DEBUG_ENABLE
+extern volatile u32 rf24g_adv_cnt; // BLE扫描上报计数(看门狗用)
+#endif
 
 void rf24g_parse(adv_report_t *adv_report);
 

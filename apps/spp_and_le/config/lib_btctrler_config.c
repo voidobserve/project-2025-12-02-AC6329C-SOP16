@@ -204,8 +204,8 @@ const int config_btctler_le_master_multilink = 0;
 // LE
 const int config_btctler_le_slave_conn_update_winden = 1500;//range:100 to 2500
 
-// LE vendor baseband
-const u32 config_vendor_le_bb = 0;
+// LE vendor baseband 
+const u32 config_vendor_le_bb = 0; 
 /* const u32 config_vendor_le_bb = VENDOR_BB_MD_CLOSE | VENDOR_BB_CONNECT_SLOT; */
 
 /*-----------------------------------------------------------*/

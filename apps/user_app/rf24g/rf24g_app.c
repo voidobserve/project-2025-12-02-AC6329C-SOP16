@@ -85,7 +85,10 @@ void rf24g_key_event_handle(void)
         return;
     }
 
+#if USER_DEBUG_ENABLE
     printf("key event == %u\n", (u16)rf24g_key_event);
+#endif
+
     switch (rf24g_key_event) {
     case RF24G_KEY_EVENT_R1C3_PRESS:
         if (0 == fc_effect.on_off_flag) {
@@ -130,7 +133,7 @@ void rf24g_key_event_handle(void)
             save_user_data_area3();
         } else if (fc_effect.Now_state == IS_light_scene) {
             // dynamic_mode_speed_add();
-            fc_effect.dream_scene.speed = 80;
+            fc_effect.dream_scene.speed = 100;
             set_fc_effect();
             save_user_data_area3();
         } else if (fc_effect.Now_state == IS_light_music) {

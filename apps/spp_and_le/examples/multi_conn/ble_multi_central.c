@@ -44,11 +44,16 @@
 #define log_info_hexdump(...)
 #endif
 
-//搜索类型
+/* 搜索类型: 被动扫描
+ * 2.4G遥控器只发广播, 不需要 SCAN_REQ/SCAN_RSP, 用被动扫描可以省掉
+ * 主动扫描的射频开销, 提高与手机(从机连接)共存时扫描的存活率。
+ * 注意: 若遥控器数据依赖 SCAN_RSP 携带, 需改回 SCAN_ACTIVE */
 #define SET_SCAN_TYPE       SCAN_ACTIVE
 //搜索 周期大小
 #define SET_SCAN_INTERVAL   ADV_SCAN_MS(24) // unit: 0.625ms
-//搜索 窗口大小
+/*
+    搜索 窗口大小 
+*/
 // #define SET_SCAN_WINDOW     ADV_SCAN_MS(8)  // unit: 0.625ms, <= SET_SCAN_INTERVAL
 #define SET_SCAN_WINDOW     ADV_SCAN_MS(24)  // unit: 0.625ms, <= SET_SCAN_INTERVAL
 
@@ -61,7 +66,7 @@
 #define SET_CONN_TIMEOUT    400 //(unit:10ms)
 
 //建立连接超时
-#define SET_CREAT_CONN_TIMEOUT    8000 //(unit:ms)
+#define SET_CREAT_CONN_TIMEOUT    8000 // (unit:ms)
 
 //配对信息表
 #define CLIENT_PAIR_BOND_ENABLE    CONFIG_BT_SM_SUPPORT_ENABLE
@@ -529,7 +534,11 @@ static void multi_scan_conn_config_set(struct ctl_pair_info_t *pair_info)
     multi_client_scan_cfg.scan_auto_do = 1;
     multi_client_scan_cfg.creat_auto_do = 1;
     multi_client_scan_cfg.scan_type = SET_SCAN_TYPE;
-    multi_client_scan_cfg.scan_filter = 1;
+    /* 必须关闭搜索重复过滤(Filter_Duplicates)
+     * 2.4G遥控器是"同地址+同数据"的连续广播包,若开启重复过滤,
+     * 连接手机后扫描被连接事件切碎,去重缓存不再复位,
+     * 会导致遥控器只在第一次能收到,之后全被过滤掉 */
+    multi_client_scan_cfg.scan_filter = 0;
     multi_client_scan_cfg.scan_interval = SET_SCAN_INTERVAL;
     multi_client_scan_cfg.scan_window = SET_SCAN_WINDOW;
 

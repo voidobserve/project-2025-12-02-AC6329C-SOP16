@@ -20,11 +20,11 @@
 #if TCFG_KWS_VOICE_RECOGNITION_ENABLE
 #include "jl_kws/jl_kws_api.h"
 #endif /* #if TCFG_KWS_VOICE_RECOGNITION_ENABLE */
- 
 
 #include "user_config.h"
 #include "user_ble_debug.h"
 #include "rf24g_app.h"
+#include "user_ble_notify.h"
 
 #define LOG_TAG_CONST APP
 #define LOG_TAG       "[APP]"
@@ -37,10 +37,14 @@
 
 /*任务列表 */
 const struct task_info task_info_table[] = {
-    {"app_core", 1, 0, 640, 128},    {"sys_event", 7, 0, 256, 0},
-    {"btctrler", 4, 0, 512, 256},    {"btencry", 1, 0, 512, 128},
-    {"btstack", 3, 0, 768, 256},     {"systimer", 7, 0, 128, 0},
-    {"update", 1, 0, 512, 0},        {"dw_update", 2, 0, 256, 128},
+    {"app_core", 1, 0, 640, 128},
+    {"sys_event", 7, 0, 256, 0},
+    {"btctrler", 4, 0, 512, 256},
+    {"btencry", 1, 0, 512, 128},
+    {"btstack", 3, 0, 768, 256},
+    {"systimer", 7, 0, 128, 0},
+    {"update", 1, 0, 512, 0},
+    {"dw_update", 2, 0, 256, 128},
 #if (RCSP_BTMATE_EN)
     {"rcsp_task", 2, 0, 640, 0},
 #endif
@@ -52,7 +56,8 @@ const struct task_info task_info_table[] = {
 #endif
     {"usb_msd", 1, 0, 512, 128},
 #if TCFG_AUDIO_ENABLE
-    {"audio_dec", 3, 0, 768, 128},   {"audio_enc", 4, 0, 512, 128},
+    {"audio_dec", 3, 0, 768, 128},
+    {"audio_enc", 4, 0, 512, 128},
 #endif /*TCFG_AUDIO_ENABLE*/
 #if TCFG_KWS_VOICE_RECOGNITION_ENABLE
     {"kws", 2, 0, 256, 64},
@@ -60,7 +65,9 @@ const struct task_info task_info_table[] = {
 #if (TUYA_DEMO_EN)
     {"user_deal", 7, 0, 512, 512}, //定义线程 tuya任务调度
 #endif
-    {"led_task", 2, 0, 512, 512},    {0, 0},
+    {"led_task", 2, 0, 512, 512},
+    {"user_notify_task", 3, 0, 128, 128},
+    {0, 0},
 };
 
 APP_VAR app_var;
@@ -509,6 +516,15 @@ void main_while(viod)
 #include "iokey.h"
 // OS_SEM LED_TASK_SEM;
 
+void user_notify_task(void *arg)
+{
+    while (1) {
+
+        user_ble_notify_param_handle();
+        os_time_dly(1);
+    }
+}
+
 void my_main(void)
 {
     printf("my_main\n");
@@ -534,6 +550,6 @@ void my_main(void)
 
     full_color_init();
 
-    // os_sem_create(&LED_TASK_SEM, 0);
+    task_create(user_notify_task, NULL, "user_notify_task");
     task_create(main_while, NULL, "led_task");
 }

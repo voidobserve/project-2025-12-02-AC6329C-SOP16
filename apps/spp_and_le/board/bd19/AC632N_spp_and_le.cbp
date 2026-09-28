@@ -739,6 +739,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../user_app/protocol/dp_data_tran.h" />
+		<Unit filename="../../../user_app/protocol/user_ble_notify.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../user_app/protocol/user_ble_notify.h" />
+		<Unit filename="../../../user_app/protocol/user_ble_notify_app.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../user_app/protocol/user_ble_notify_app.h" />
 		<Unit filename="../../../user_app/rf24g/rf24g.h" />
 		<Unit filename="../../../user_app/rf24g/rf24g_app.c">
 			<Option compilerVar="CC" />

@@ -153,9 +153,34 @@ static u8 rf24g_get_key_value(void)
     return NO_KEY;
 }
 
+#if RF24G_WATCH_DOG_DEBUG_ENABLE
+/* BLE扫描上报计数(全量), 供扫描看门狗判断底层扫描是否还活着 */
+volatile u32 rf24g_adv_cnt = 0;
+#endif
+
 // 在 le_gatt_client.c -> __resolve_adv_report() 中调用
 void rf24g_parse(adv_report_t *adv_report)
 {
+#if RF24G_DEBUG_LOG
+    /* 诊断统计: 连接手机前后对比该打印是否还在刷新
+     * - adv_cnt 不进 => BLE扫描彻底没有上报(底层扫描被连接停了)
+     * - adv_cnt 在涨但没有 remote hit => 遥控器包被过滤或没收到 */
+    static u16 adv_cnt = 0;
+    static u16 hit_cnt = 0;
+#endif
+
+#if RF24G_WATCH_DOG_DEBUG_ENABLE
+    /* 扫描看门狗依赖此计数 */
+    rf24g_adv_cnt++;
+#endif
+
+#if RF24G_DEBUG_LOG
+    if (0 == (++adv_cnt % 50)) {
+        printf("[rf24g] adv cnt=%u len=%u rssi=%d\n", adv_cnt,
+               adv_report->length, adv_report->rssi);
+    }
+#endif
+
     if (adv_report->length < 13) {
         // 长度不对，直接返回
         return;
@@ -170,6 +195,11 @@ void rf24g_parse(adv_report_t *adv_report)
         // 格式头不正确，直接返回
         return;
     }
+
+#if RF24G_DEBUG_LOG
+    printf("[rf24g] remote hit: key=%02x rssi=%d hit_cnt=%u\n",
+           adv_report->data[12], adv_report->rssi, ++hit_cnt);
+#endif
 
     rf24g_key_val = adv_report->data[12];
     // printf("key_val == %02x\n", (u16)rf24g_key_val);

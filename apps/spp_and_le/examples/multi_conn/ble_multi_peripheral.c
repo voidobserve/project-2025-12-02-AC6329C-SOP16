@@ -36,6 +36,8 @@
 #include "user_ble_debug.h"
 #include "dp_data_tran.h"
 #include "user_ble_notify.h"
+#include "rf24g_parse.h"
+#include "le/ble_api.h"
 
 #if CONFIG_APP_MULTI && CONFIG_BT_GATT_SERVER_NUM
 
@@ -58,10 +60,15 @@
 static uint8_t multi_connection_update_enable = 1; ///0--disable, 1--enable
 //当前请求的参数表index
 //参数表
+/* 注意: 连接间隔至少要到 24(即30ms)!
+ * 实测(用 nRF Connect 逐个请求各优先级验证): 间隔 < 30ms 时控制器会停止
+ * 调度BLE扫描, 表现为手机连接后2.4G遥控器彻底失效(断开连接立即恢复);
+ * 30~50ms(BALANCED)及以上则一切正常。
+ * 原值 {16,24,...} 下限只有20ms, 手机会在区间内任选(实测 21 死 / 24 活)。 */
 static const struct conn_update_param_t multi_connection_param_table[] = {
-    {16, 24, 10, 600}, //11
-    {12, 28, 10, 600}, //3.7
-    {8, 20, 10, 600},
+    {24, 40, 10, 600}, //30~50ms 推荐值
+    {24, 32, 10, 600}, //30~40ms
+    {32, 48, 10, 600}, //40~60ms
 };
 
 //共可用的参数组数
@@ -91,6 +98,23 @@ static u8 cur_peer_addr_info[7]; //当前连接对方地址信息
 extern const char *bt_get_local_name();
 extern void clr_wdt(void);
 static void multi_adv_config_set(void);
+
+/* 重开2.4G遥控器所依赖的BLE扫描通道(先关后开)。
+ * 实测结论: 对"特定手机连接后底层扫描被控制器停掉"的情况无效,
+ * 重开命令返回成功但不起作用, 故整体屏蔽保留代码备用。
+ * 注意: 若恢复使用, filter policy 必须在 ble_op_set_scan_param 之前下发。 */
+#if 0
+static void multi_rf24g_scan_reopen(const char *tag)
+{
+    if (BLE_ST_SCAN == ble_gatt_client_get_work_state()) {
+        ble_gatt_client_scan_enable(0);
+    }
+    ble_op_set_scan_filter_policy(0);
+    log_info("scan reopen(%s) ret = %d", tag,
+             ble_gatt_client_scan_enable(1));
+}
+#endif
+
 //------------------------------------------------------
 //for ANCS
 static uint16_t multi_att_read_callback(hci_con_handle_t connection_handle,
@@ -240,6 +264,7 @@ static int multi_event_packet_handler(int event, u8 *packet, u16 size,
         // 更新连接句柄
         user_ble_notify_connection_handle_update(
             little_endian_read_16(packet, 0));
+
         break;
 
     case GATT_COMM_EVENT_DISCONNECT_COMPLETE:
@@ -277,10 +302,24 @@ static int multi_event_packet_handler(int event, u8 *packet, u16 size,
         }
         break;
 
-    case GATT_COMM_EVENT_CONNECTION_UPDATE_COMPLETE:
-        log_info("conn_param update_complete:%04x\n",
-                 little_endian_read_16(packet, 0));
+    case GATT_COMM_EVENT_CONNECTION_UPDATE_COMPLETE: {
+        u16 conn_interval =
+            hci_subevent_le_connection_update_complete_get_conn_interval(
+                ext_param);
+        log_info("conn_param update_complete:%04x, interval=%d(latency=%d)\n",
+                 little_endian_read_16(packet, 0), conn_interval,
+                 hci_subevent_le_connection_update_complete_get_conn_latency(
+                     ext_param));
+        /* 手机(尤其APP请求HIGH priority时)可能把间隔改小到30ms以下,
+         * 那会导致底层扫描被停掉, 这里复查并重新请求宽松参数 */
+        if (conn_interval && conn_interval < 24) {
+            log_info("interval too small(%d), re-request wide param\n",
+                     conn_interval);
+            multi_connection_update_enable = 1;
+            multi_send_connetion_update_deal(little_endian_read_16(packet, 0));
+        }
         break;
+    }
 
     case GATT_COMM_EVENT_DIRECT_ADV_TIMEOUT:
         log_info("DIRECT_ADV_TIMEOUT:%d", direct_adv_count);
@@ -604,19 +643,22 @@ static int multi_make_set_adv_data(void)
 #endif
 
     // 广播头
-    u8 info[13]; //客户机型数据
-    info[0] = 'Z';
-    info[1] = 'D';
-    info[2] = 0x00;
-    info[3] = 0xD9;
-    info[4] = 0x03;
-    info[5] = 0x86;
-    info[6] = 0x07;
-    le_controller_get_mac(&info[7]); // 获取ble的蓝牙 public 地址
+    u8 info[20]; //客户机型数据
+    u8 index = 0;
+
+    info[index++] = 'Z';
+    info[index++] = 'D';
+    info[index++] = 0x00;
+    info[index++] = 0xD9;
+    info[index++] = 0x03;
+    info[index++] = 0x86;
+    info[index++] = 0x07;
+
+    le_controller_get_mac(&info[index]); // 获取ble的蓝牙 public 地址
 
     offset += make_eir_packet_data(&buf[offset], offset,
                                    HCI_EIR_DATATYPE_MANUFACTURER_SPECIFIC_DATA,
-                                   info, 13);
+                                   info, ARRAY_SIZE(info));
 
     if (offset > ADV_RSP_PACKET_MAX) {
         puts("***multi_adv_data overflow!!!!!!\n");
@@ -696,6 +738,25 @@ static void multi_adv_config_set(void)
     ble_gatt_server_set_adv_config(&multi_server_adv_config);
 }
 
+#if RF24G_WATCH_DOG_DEBUG_ENABLE
+/* 2.4G遥控器扫描看门狗:
+ * 手机连接后, 底层扫描可能被连接事件抢占而停止(host 侧无感知),
+ * 表现为不再有任何 adv report 上报 -> 2.4G遥控器彻底失效。
+ * 这里只以 2s 为窗口做检测打印, 便于观察扫描失效的时间点;
+ * 重开扫描的操作已屏蔽(实测无效)。 */
+static void multi_rf24g_scan_watchdog(void *priv)
+{
+    static u32 last_cnt = 0;
+
+    if (rf24g_adv_cnt == last_cnt) {
+        /* cnt 每次相同 = 完全没有任何广播上报 */
+        log_info("no adv report(cnt=%u)", rf24g_adv_cnt);
+        /* multi_rf24g_scan_reopen("watchdog"); */
+    }
+    last_cnt = rf24g_adv_cnt;
+}
+#endif
+
 //server init
 void multi_server_init(void)
 {
@@ -711,6 +772,11 @@ void multi_server_init(void)
 
     ble_gatt_server_set_profile(multi_profile_data, sizeof(multi_profile_data));
     multi_adv_config_set();
+
+#if RF24G_WATCH_DOG_DEBUG_ENABLE
+    /* 扫描看门狗: 防止连接手机后底层扫描被停 */
+    sys_timer_add(NULL, multi_rf24g_scan_watchdog, 2000);
+#endif
 }
 
 //server exit

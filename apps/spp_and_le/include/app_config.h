@@ -69,10 +69,10 @@
 #define CONFIG_BT_GATT_CONNECTION_NUM      (CONFIG_BT_GATT_SERVER_NUM + CONFIG_BT_GATT_CLIENT_NUM) //
 
 #elif CONFIG_APP_MULTI
-#define CONFIG_BT_GATT_COMMON_ENABLE       1   //配置使用gatt公共模块
-#define CONFIG_BT_SM_SUPPORT_ENABLE        0  //配置是否支持加密
-#define CONFIG_BT_GATT_CLIENT_NUM          1 //range(0~7)  配置主机下的client个数
-#define CONFIG_BT_GATT_SERVER_NUM          1 //range(0~1)  配置从机上的server个数
+#define CONFIG_BT_GATT_COMMON_ENABLE       1 // 配置使用gatt公共模块
+#define CONFIG_BT_SM_SUPPORT_ENABLE        0 // 配置是否支持加密
+#define CONFIG_BT_GATT_CLIENT_NUM          1 // range(0~7)  配置主机下的client个数
+#define CONFIG_BT_GATT_SERVER_NUM          1 // range(0~1)  配置从机上的server个数
 #define CONFIG_BT_GATT_CONNECTION_NUM      (CONFIG_BT_GATT_SERVER_NUM + CONFIG_BT_GATT_CLIENT_NUM) //range(0~8)
 
 //选择AT: 主机从机二选一

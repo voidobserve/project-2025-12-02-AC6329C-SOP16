@@ -20,6 +20,8 @@ void fc_driver(u8 r,u8 g ,u8 b);
 
 u32 syn_edge_cnt_get(void);
 
+void set_sensitive(u8 s);
+
 #endif
 
 
